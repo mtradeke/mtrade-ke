@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MTRADE KE - Buy and Sell Online in Kenya</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Supabase JS Library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,7 +28,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .btn-success:hover { background: #218838; }
 .btn-block { width: 100%; display: block; }
 .btn-lg { padding: 15px 40px; font-size: 18px; }
-.btn-sm { padding: 5px 15px; font-size: 13px; }
 .user-menu { position: relative; cursor: pointer; padding: 10px 15px; background: rgba(255,255,255,0.1); border-radius: 5px; }
 .dropdown { display: none; position: absolute; top: 100%; right: 0; background: white; color: #333; min-width: 200px; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-top: 5px; z-index: 1001; }
 .dropdown a { display: block; padding: 12px 20px; color: #333; text-decoration: none; cursor: pointer; }
@@ -435,12 +433,12 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 // SUPABASE CONFIGURATION - YOUR CREDENTIALS
 // ==========================================
 const SUPABASE_URL = 'https://ciccwaokvoyjxphppzvh.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_KtAIequUlBXi3nGryChAg_vft8h...'; // ⚠️ REPLACE WITH YOUR FULL KEY
+const SUPABASE_ANON_KEY = 'sb_publishable_KtAIequUlBXi3nGryChAg_vft8hXd4';
 
 // Initialize Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Categories with images and brands
+// Categories with REAL IMAGES
 const categories = [
 { name: 'Vehicles', image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop', subcategories: ['Cars', 'Motorcycles', 'Trucks', 'Vehicle Parts & Accessories', 'Buses & Microbuses', 'Construction & Heavy Machinery'], brands: ['Toyota', 'Nissan', 'Mazda', 'Subaru', 'Mitsubishi', 'Honda', 'Hyundai', 'Kia', 'BMW', 'Mercedes-Benz', 'Volkswagen', 'Audi', 'Lexus', 'Land Rover', 'Range Rover', 'Isuzu', 'Suzuki', 'Daihatsu', 'Other'] },
 { name: 'Property', image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop', subcategories: ['Houses & Apartments For Rent', 'Houses & Apartments For Sale', 'Land & Plots For Sale', 'Land & Plots For Rent', 'Short Let', 'Commercial Property For Sale', 'Commercial Property For Rent', 'Event Centres, Venues & Workstations'], brands: [] },
@@ -514,14 +512,8 @@ categoriesGrid.innerHTML = categories.map(cat => `
 </div>
 </div>`).join('');
 
-// Get counts from Supabase
 categories.forEach(async (cat) => {
-const { count, error } = await supabase
-.from('products')
-.select('*', { count: 'exact', head: true })
-.eq('category', cat.name)
-.eq('status', 'active');
-
+const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('category', cat.name).eq('status', 'active');
 const card = categoriesGrid.querySelector(`.category-card:nth-child(${categories.indexOf(cat) + 1}) p`);
 if (card) card.textContent = `${count || 0} ads available`;
 });
@@ -579,20 +571,12 @@ if (!category) return;
 document.getElementById('categoryTitle').textContent = categoryName;
 document.getElementById('categoryDescription').textContent = `Find the best deals on ${categoryName.toLowerCase()} in Kenya`;
 
-// Load subcategories
 const subcategoryList = document.getElementById('subcategoryList');
-
-// Get total count
-const { count: totalCount } = await supabase
-.from('products')
-.select('*', { count: 'exact', head: true })
-.eq('category', categoryName)
-.eq('status', 'active');
+const { count: totalCount } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('category', categoryName).eq('status', 'active');
 
 subcategoryList.innerHTML = `<li><a onclick="loadCategoryProducts('${categoryName}', '')" class="active">All ${categoryName} <span class="count">${totalCount || 0}</span></a></li>` +
 category.subcategories.map(sub => `<li><a onclick="loadCategoryProducts('${categoryName}', '${sub}')">${sub} <span class="count">-</span></a></li>`).join('');
 
-// Show/hide brand filter
 const brandFilterGroup = document.getElementById('brandFilterGroup');
 if (categoryName === 'Vehicles' || categoryName === 'Electronics' || categoryName === 'Fashion') {
 brandFilterGroup.style.display = 'block';
@@ -617,7 +601,6 @@ const productsGrid = document.getElementById('categoryProductsGrid');
 productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading...</p></div>';
 
 let query = supabase.from('products').select('*').eq('category', categoryName).eq('status', 'active');
-
 if (subcategory) query = query.eq('subcategory', subcategory);
 
 const { data: products, error } = await query;
@@ -629,7 +612,6 @@ return;
 
 let filteredProducts = products;
 
-// Apply filters
 const minPrice = document.getElementById('minPrice').value;
 const maxPrice = document.getElementById('maxPrice').value;
 const condition = document.getElementById('conditionFilter').value;
@@ -640,7 +622,6 @@ if (maxPrice) filteredProducts = filteredProducts.filter(p => parseInt(p.price) 
 if (condition) filteredProducts = filteredProducts.filter(p => p.condition === condition);
 if (brand) filteredProducts = filteredProducts.filter(p => p.brand === brand);
 
-// Sort
 filteredProducts = sortProductsArray(filteredProducts, currentSort);
 
 document.getElementById('categoryProductsTitle').textContent = subcategory || `All ${categoryName}`;
@@ -655,7 +636,6 @@ productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
 productsGrid.innerHTML = filteredProducts.map(p => createProductCard(p)).join('');
 }
 
-// Update active subcategory
 document.querySelectorAll('.subcategory-list a').forEach(link => link.classList.remove('active'));
 if (subcategory) {
 const activeLink = Array.from(document.querySelectorAll('.subcategory-list a')).find(link => link.textContent.includes(subcategory));
@@ -745,18 +725,11 @@ try {
 const { data: authData, error: authError } = await supabase.auth.signUp({
 email: data.email,
 password: data.password,
-options: {
-data: {
-name: data.name,
-phone: data.phone,
-location: data.location
-}
-}
+options: { data: { name: data.name, phone: data.phone, location: data.location } }
 });
 
 if (authError) throw authError;
 
-// Create user profile
 const { error: profileError } = await supabase.from('users').insert({
 id: authData.user.id,
 email: data.email,
@@ -793,9 +766,7 @@ password: data.password
 
 if (authError) throw authError;
 
-// Get user profile
 const { data: profile } = await supabase.from('users').select('*').eq('id', authData.user.id).single();
-
 currentUser = profile || { id: authData.user.id, email: authData.user.email, name: authData.user.user_metadata.name };
 
 showNotification('Login successful!');
@@ -915,11 +886,7 @@ if (!currentUser) { showPage('login'); return; }
 const container = document.getElementById('myAdsList');
 container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading your ads...</p></div>';
 
-const { data: ads, error } = await supabase
-.from('products')
-.select('*')
-.eq('seller_id', currentUser.id)
-.order('created_at', { ascending: false });
+const { data: ads, error } = await supabase.from('products').select('*').eq('seller_id', currentUser.id).order('created_at', { ascending: false });
 
 if (error || !ads || ads.length === 0) {
 container.innerHTML = `<div class="empty-state">
@@ -1026,7 +993,6 @@ if (diffDays < 7) return `${diffDays} days ago`;
 return date.toLocaleDateString();
 }
 
-// Check auth state on load
 async function checkAuth() {
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
@@ -1036,7 +1002,6 @@ currentUser = profile || { id: session.user.id, email: session.user.email, name:
 updateHeader();
 }
 
-// Listen for auth changes
 supabase.auth.onAuthStateChange(async (event, session) => {
 if (session) {
 const { data: profile } = await supabase.from('users').select('*').eq('id', session.user.id).single();
