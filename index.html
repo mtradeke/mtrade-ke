@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MTRADE KE - Buy and Sell Online in Kenya</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-/* Header */
 .header { background: #28a745; color: white; padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .header-top { display: flex; align-items: center; justify-content: space-between; gap: 30px; flex-wrap: wrap; }
 .logo h1 { font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -24,6 +27,8 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .btn-secondary:hover { background: #f0f0f0; }
 .btn-danger { background: #dc3545; color: white; }
 .btn-danger:hover { background: #c82333; }
+.btn-success { background: #28a745; color: white; }
+.btn-success:hover { background: #218838; }
 .btn-block { width: 100%; display: block; }
 .btn-lg { padding: 15px 40px; font-size: 18px; }
 .btn-sm { padding: 5px 15px; font-size: 13px; }
@@ -32,15 +37,12 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .dropdown a { display: block; padding: 12px 20px; color: #333; text-decoration: none; cursor: pointer; }
 .dropdown a:hover { background: #f5f5f5; }
 .user-menu:hover .dropdown { display: block; }
-/* Navigation */
 .nav-menu { background: #1e7e34; padding: 10px 0; }
 .nav-menu ul { list-style: none; display: flex; gap: 30px; flex-wrap: wrap; }
 .nav-menu a { color: white; text-decoration: none; cursor: pointer; }
 .nav-menu a:hover { color: #ffc107; }
-/* Pages */
 .page { display: none; padding: 40px 0; }
 .page.active { display: block; }
-/* Categories */
 .categories-section { background: white; padding: 40px 0; margin: 30px 0; border-radius: 10px; }
 .categories-section h2 { text-align: center; margin-bottom: 30px; font-size: 28px; color: #28a745; }
 .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
@@ -50,7 +52,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .category-info { padding: 20px; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); }
 .category-info h3 { color: #28a745; margin-bottom: 8px; font-size: 20px; }
 .category-info p { color: #666; font-size: 14px; }
-/* Category Detail Page */
 .category-detail-page { padding: 20px 0; }
 .category-header { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 30px 0; margin-bottom: 30px; border-radius: 10px; }
 .category-header h1 { font-size: 32px; margin-bottom: 10px; }
@@ -80,7 +81,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .products-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
 .products-header h2 { color: #28a745; }
 .results-count { color: #666; font-size: 14px; }
-/* Products */
 .recent-ads { padding: 40px 0; }
 .recent-ads h2 { text-align: center; margin-bottom: 30px; font-size: 28px; color: #28a745; }
 .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
@@ -95,7 +95,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .product-location { color: #666; font-size: 14px; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
 .product-date { color: #999; font-size: 13px; }
 .product-meta-info { display: flex; gap: 15px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #666; }
-/* Auth */
 .auth-page { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 .auth-container { padding: 20px; }
 .auth-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 500px; width: 100%; }
@@ -108,7 +107,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .form-group small { display: block; margin-top: 5px; color: #666; font-size: 13px; }
 .auth-link { text-align: center; margin-top: 20px; }
 .auth-link a { color: #28a745; text-decoration: none; cursor: pointer; }
-/* Post Ad */
 .post-ad-container { max-width: 800px; margin: 40px auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 .post-ad-container h1 { color: #28a745; margin-bottom: 10px; }
 .form-section { margin: 30px 0; padding: 25px; background: #f8f9fa; border-radius: 8px; }
@@ -118,7 +116,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .preview-image img { width: 100%; height: 100%; object-fit: cover; }
 .preview-image .remove-img { position: absolute; top: 2px; right: 2px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
 .form-actions { display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
-/* My Ads */
 .my-ads-container { max-width: 1000px; margin: 40px auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 .my-ads-container h1 { color: #28a745; margin-bottom: 30px; }
 .my-ad-item { display: flex; gap: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; flex-wrap: wrap; }
@@ -126,7 +123,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .my-ad-info { flex: 1; }
 .my-ad-info h3 { margin-bottom: 10px; }
 .my-ad-actions { display: flex; gap: 10px; margin-top: 10px; }
-/* Product Details */
 .product-details-container { max-width: 900px; margin: 40px auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 .product-details-container h1 { color: #28a745; margin-bottom: 20px; }
 .product-main-image { width: 100%; height: 400px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; }
@@ -135,7 +131,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .meta-item i { color: #28a745; }
 .seller-info { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
 .seller-info h3 { margin-bottom: 15px; color: #28a745; }
-/* Customer Service */
 .customer-service { padding: 40px 0; }
 .customer-service h1 { text-align: center; color: #28a745; margin-bottom: 10px; }
 .customer-service > p { text-align: center; color: #666; margin-bottom: 40px; }
@@ -150,7 +145,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .topic a { color: #28a745; text-decoration: none; cursor: pointer; }
 .topic a:hover { text-decoration: underline; }
 .contact-form-section { background: white; padding: 40px; border-radius: 10px; max-width: 700px; margin: 0 auto; }
-/* Footer */
 .footer { background: #333; color: white; padding: 40px 0 20px; margin-top: 50px; }
 .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
 .footer h3 { margin-bottom: 15px; color: #ffc107; }
@@ -159,17 +153,17 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 .footer a { color: white; text-decoration: none; cursor: pointer; }
 .footer a:hover { color: #ffc107; }
 .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #555; }
-/* Notifications */
 .notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 5px; color: white; z-index: 10000; animation: slideIn 0.3s ease; }
 .notification-success { background: #28a745; }
 .notification-error { background: #dc3545; }
 @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-/* Empty State */
 .empty-state { text-align: center; padding: 60px 20px; }
 .empty-state i { font-size: 100px; color: #ddd; margin-bottom: 20px; }
 .empty-state h2 { color: #666; margin-bottom: 10px; }
 .empty-state p { color: #999; margin-bottom: 20px; }
-/* Responsive */
+.loading { text-align: center; padding: 40px; }
+.loading i { font-size: 48px; color: #28a745; animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @media (max-width: 768px) {
 .header-top { flex-direction: column; }
 .search-bar { max-width: 100%; width: 100%; }
@@ -182,24 +176,19 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 </style>
 </head>
 <body>
-<!-- Header -->
 <header class="header">
 <div class="container">
 <div class="header-top">
-<div class="logo" onclick="showPage('home')">
-<h1>🛒 MTRADE KE</h1>
-</div>
+<div class="logo" onclick="showPage('home')"><h1>🛒 MTRADE KE</h1></div>
 <div class="search-bar">
 <input type="text" placeholder="I am looking for..." id="searchInput">
 <button onclick="search()"><i class="fas fa-search"></i></button>
 </div>
-<div class="header-actions" id="headerActions">
-<!-- Dynamic content -->
-</div>
+<div class="header-actions" id="headerActions"></div>
 </div>
 </div>
 </header>
-<!-- Navigation Menu -->
+
 <nav class="nav-menu" id="navMenu" style="display:none;">
 <div class="container">
 <ul>
@@ -213,47 +202,37 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 </ul>
 </div>
 </nav>
-<!-- HOME PAGE -->
+
 <div id="homePage" class="page active">
-<!-- Categories -->
 <section class="categories-section">
 <div class="container">
 <h2>Browse Categories</h2>
-<div class="categories-grid" id="categoriesGrid">
-<!-- Dynamic categories -->
-</div>
+<div class="categories-grid" id="categoriesGrid"></div>
 </div>
 </section>
-<!-- Recent Ads -->
 <section class="recent-ads">
 <div class="container">
 <h2>Fresh Recommendations</h2>
 <div class="products-grid" id="productsGrid">
-<!-- Dynamic products -->
+<div class="loading"><i class="fas fa-spinner"></i><p>Loading products...</p></div>
 </div>
 </div>
 </section>
 </div>
 
-<!-- CATEGORY DETAIL PAGE -->
 <div id="categoryDetailPage" class="page">
 <div class="container">
 <div class="category-detail-page">
 <div class="category-header">
 <h1 id="categoryTitle">Category Name</h1>
 <p id="categoryDescription">Browse all items</p>
-<div class="back-btn" onclick="showPage('home')">
-<i class="fas fa-arrow-left"></i> Back to Home
-</div>
+<div class="back-btn" onclick="showPage('home')"><i class="fas fa-arrow-left"></i> Back to Home</div>
 </div>
 <div class="category-layout">
-<!-- Left Sidebar: Filters & Subcategories -->
 <div class="sidebar">
 <div class="subcategories-panel">
 <h3><i class="fas fa-th-list"></i> Subcategories</h3>
-<ul class="subcategory-list" id="subcategoryList">
-<!-- Dynamic subcategories -->
-</ul>
+<ul class="subcategory-list" id="subcategoryList"></ul>
 </div>
 <div class="subcategories-panel filter-section">
 <h3><i class="fas fa-filter"></i> Filters</h3>
@@ -267,9 +246,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 </div>
 <div class="filter-group" id="brandFilterGroup" style="display:none;">
 <label>Brand/Make</label>
-<select id="brandSelect">
-<option value="">All Brands</option>
-</select>
+<select id="brandSelect"><option value="">All Brands</option></select>
 </div>
 <div class="filter-group">
 <label>Condition</label>
@@ -284,7 +261,6 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 <button class="btn btn-secondary btn-block" onclick="clearFilters()" style="margin-top:10px;">Clear Filters</button>
 </div>
 </div>
-<!-- Right Content: Products -->
 <div class="products-content">
 <div class="products-header">
 <h2 id="categoryProductsTitle">All Items</h2>
@@ -296,70 +272,46 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 <button class="sort-btn" onclick="sortProducts('price-low')">Price: Low to High</button>
 <button class="sort-btn" onclick="sortProducts('price-high')">Price: High to Low</button>
 </div>
-<div class="products-grid" id="categoryProductsGrid">
-<!-- Dynamic products -->
-</div>
+<div class="products-grid" id="categoryProductsGrid"></div>
 </div>
 </div>
 </div>
 </div>
 </div>
 
-<!-- LOGIN PAGE -->
 <div id="loginPage" class="page auth-page">
 <div class="auth-container">
 <div class="auth-box">
 <h1>Welcome Back!</h1>
 <p>Login to your MTRADE KE account</p>
 <form onsubmit="handleLogin(event)">
-<div class="form-group">
-<label>Email Address *</label>
-<input type="email" name="email" required placeholder="john@example.com">
-</div>
-<div class="form-group">
-<label>Password *</label>
-<input type="password" name="password" required placeholder="Your password">
-</div>
+<div class="form-group"><label>Email Address *</label><input type="email" name="email" required placeholder="john@example.com"></div>
+<div class="form-group"><label>Password *</label><input type="password" name="password" required placeholder="Your password"></div>
 <button type="submit" class="btn btn-primary btn-block">Login</button>
 </form>
 <p class="auth-link">Don't have an account? <a onclick="showPage('register')">Register here</a></p>
 </div>
 </div>
 </div>
-<!-- REGISTER PAGE -->
+
 <div id="registerPage" class="page auth-page">
 <div class="auth-container">
 <div class="auth-box">
 <h1>Join MTRADE KE</h1>
 <p>Create an account to start buying and selling</p>
 <form onsubmit="handleRegister(event)">
-<div class="form-group">
-<label>Full Name *</label>
-<input type="text" name="name" required placeholder="John Doe">
-</div>
-<div class="form-group">
-<label>Email Address *</label>
-<input type="email" name="email" required placeholder="john@example.com">
-</div>
-<div class="form-group">
-<label>Phone Number *</label>
-<input type="tel" name="phone" required placeholder="0712 345 678">
-</div>
-<div class="form-group">
-<label>Location *</label>
-<input type="text" name="location" required placeholder="Nairobi, Kenya">
-</div>
-<div class="form-group">
-<label>Password *</label>
-<input type="password" name="password" required placeholder="Min 6 characters">
-</div>
+<div class="form-group"><label>Full Name *</label><input type="text" name="name" required placeholder="John Doe"></div>
+<div class="form-group"><label>Email Address *</label><input type="email" name="email" required placeholder="john@example.com"></div>
+<div class="form-group"><label>Phone Number *</label><input type="tel" name="phone" required placeholder="0712 345 678"></div>
+<div class="form-group"><label>Location *</label><input type="text" name="location" required placeholder="Nairobi, Kenya"></div>
+<div class="form-group"><label>Password *</label><input type="password" name="password" required placeholder="Min 6 characters"></div>
 <button type="submit" class="btn btn-primary btn-block">Create Account</button>
 </form>
 <p class="auth-link">Already have an account? <a onclick="showPage('login')">Login here</a></p>
 </div>
 </div>
 </div>
-<!-- POST AD PAGE -->
+
 <div id="postAdPage" class="page">
 <div class="container">
 <div class="post-ad-container">
@@ -368,73 +320,27 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 <form onsubmit="handlePostAd(event)">
 <div class="form-section">
 <h3>Basic Information</h3>
-<div class="form-group">
-<label>Ad Title *</label>
-<input type="text" name="title" required placeholder="e.g., iPhone 13 Pro Max 256GB">
-<small>Be specific and include key details</small>
-</div>
-<div class="form-group">
-<label>Description *</label>
-<textarea name="description" rows="5" required placeholder="Describe your item in detail..."></textarea>
-</div>
+<div class="form-group"><label>Ad Title *</label><input type="text" name="title" required placeholder="e.g., iPhone 13 Pro Max 256GB"><small>Be specific and include key details</small></div>
+<div class="form-group"><label>Description *</label><textarea name="description" rows="5" required placeholder="Describe your item in detail..."></textarea></div>
 </div>
 <div class="form-section">
 <h3>Category</h3>
-<div class="form-group">
-<label>Category *</label>
-<select name="category" id="categorySelect" required onchange="loadSubcategories()">
-<option value="">Select Category</option>
-<option value="Vehicles">Vehicles</option>
-<option value="Property">Property</option>
-<option value="Electronics">Electronics</option>
-<option value="Home & Kitchen">Home & Kitchen</option>
-<option value="Fashion">Fashion</option>
-<option value="Sports">Sports</option>
-<option value="Services">Services</option>
-<option value="Jobs">Jobs</option>
-</select>
-</div>
-<div class="form-group">
-<label>Subcategory</label>
-<select name="subcategory" id="subcategorySelect">
-<option value="">Select Subcategory</option>
-</select>
-</div>
-<div class="form-group" id="brandGroup" style="display:none;">
-<label>Brand/Make</label>
-<input type="text" name="brand" id="brandInput" placeholder="e.g., Toyota, Samsung, HP">
-</div>
+<div class="form-group"><label>Category *</label><select name="category" id="categorySelect" required onchange="loadSubcategories()"><option value="">Select Category</option><option value="Vehicles">Vehicles</option><option value="Property">Property</option><option value="Electronics">Electronics</option><option value="Home & Kitchen">Home & Kitchen</option><option value="Fashion">Fashion</option><option value="Sports">Sports</option><option value="Services">Services</option><option value="Jobs">Jobs</option></select></div>
+<div class="form-group"><label>Subcategory</label><select name="subcategory" id="subcategorySelect"><option value="">Select Subcategory</option></select></div>
+<div class="form-group" id="brandGroup" style="display:none;"><label>Brand/Make</label><input type="text" name="brand" id="brandInput" placeholder="e.g., Toyota, Samsung, HP"></div>
 </div>
 <div class="form-section">
 <h3>Pricing</h3>
-<div class="form-group">
-<label>Price (KSh) *</label>
-<input type="number" name="price" required placeholder="0">
-</div>
-<div class="form-group">
-<label>Condition *</label>
-<select name="condition" required>
-<option value="New">New</option>
-<option value="Used">Used</option>
-<option value="Refurbished">Refurbished</option>
-</select>
-</div>
+<div class="form-group"><label>Price (KSh) *</label><input type="number" name="price" required placeholder="0"></div>
+<div class="form-group"><label>Condition *</label><select name="condition" required><option value="New">New</option><option value="Used">Used</option><option value="Refurbished">Refurbished</option></select></div>
 </div>
 <div class="form-section">
 <h3>Location</h3>
-<div class="form-group">
-<label>Location *</label>
-<input type="text" name="location" required placeholder="e.g., Nairobi, Westlands">
-</div>
+<div class="form-group"><label>Location *</label><input type="text" name="location" required placeholder="e.g., Nairobi, Westlands"></div>
 </div>
 <div class="form-section">
 <h3>Images</h3>
-<div class="form-group">
-<label>Upload Photos</label>
-<input type="file" id="imageInput" multiple accept="image/*" onchange="previewImages(event)">
-<small>Supported formats: JPG, PNG. Max 5 images.</small>
-<div id="imagePreview" class="image-preview"></div>
-</div>
+<div class="form-group"><label>Upload Photos</label><input type="file" id="imageInput" multiple accept="image/*" onchange="previewImages(event)"><small>Supported formats: JPG, PNG. Max 5 images.</small><div id="imagePreview" class="image-preview"></div></div>
 </div>
 <div class="form-actions">
 <button type="submit" class="btn btn-primary btn-lg">Post Ad Now</button>
@@ -444,219 +350,123 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 </div>
 </div>
 </div>
-<!-- MY ADS PAGE -->
+
 <div id="myAdsPage" class="page">
 <div class="container">
 <div class="my-ads-container">
 <h1>My Advertisements</h1>
-<div id="myAdsList">
-<!-- Dynamic content -->
+<div id="myAdsList"></div>
 </div>
 </div>
 </div>
-</div>
-<!-- PRODUCT DETAILS PAGE -->
+
 <div id="productDetailsPage" class="page">
 <div class="container">
-<div class="product-details-container" id="productDetails">
-<!-- Dynamic content -->
+<div class="product-details-container" id="productDetails"></div>
 </div>
 </div>
-</div>
-<!-- CUSTOMER SERVICE PAGE -->
+
 <div id="customerServicePage" class="page">
 <div class="container">
 <div class="customer-service">
 <h1>Customer Service</h1>
 <p>We're here to help you with any questions or issues</p>
 <div class="service-grid">
-<div class="service-card">
-<i class="fas fa-phone-alt"></i>
-<h3>Call Us</h3>
-<p>+254 700 000 000</p>
-<p>Mon-Sat: 8AM - 6PM</p>
-</div>
-<div class="service-card">
-<i class="fas fa-envelope"></i>
-<h3>Email Us</h3>
-<p>support@mtradeke.co.ke</p>
-<p>We reply within 24 hours</p>
-</div>
-<div class="service-card">
-<i class="fas fa-comments"></i>
-<h3>Live Chat</h3>
-<p>Chat with our support team</p>
-<button class="btn btn-primary" onclick="showNotification('Chat feature coming soon!')">Start Chat</button>
-</div>
-<div class="service-card">
-<i class="fas fa-question-circle"></i>
-<h3>FAQs</h3>
-<p>Find answers to common questions</p>
-<button class="btn btn-secondary" onclick="showNotification('FAQ page coming soon!')">View FAQs</button>
-</div>
+<div class="service-card"><i class="fas fa-phone-alt"></i><h3>Call Us</h3><p>+254 700 000 000</p><p>Mon-Sat: 8AM - 6PM</p></div>
+<div class="service-card"><i class="fas fa-envelope"></i><h3>Email Us</h3><p>support@mtradeke.co.ke</p><p>We reply within 24 hours</p></div>
+<div class="service-card"><i class="fas fa-comments"></i><h3>Live Chat</h3><button class="btn btn-primary" onclick="showNotification('Chat feature coming soon!')">Start Chat</button></div>
+<div class="service-card"><i class="fas fa-question-circle"></i><h3>FAQs</h3><button class="btn btn-secondary" onclick="showNotification('FAQ page coming soon!')">View FAQs</button></div>
 </div>
 <div class="help-topics">
 <h2>Common Topics</h2>
 <div class="topics-grid">
-<div class="topic">
-<h3>Buying</h3>
-<ul>
+<div class="topic"><h3>Buying</h3><ul>
 <li><a onclick="showNotification('How to buy safely')">How to buy safely</a></li>
 <li><a onclick="showNotification('Payment methods')">Payment methods</a></li>
 <li><a onclick="showNotification('What to check before buying')">What to check before buying</a></li>
-</ul>
-</div>
-<div class="topic">
-<h3>Selling</h3>
-<ul>
+</ul></div>
+<div class="topic"><h3>Selling</h3><ul>
 <li><a onclick="showNotification('How to post an ad')">How to post an ad</a></li>
 <li><a onclick="showNotification('Pricing tips')">Pricing tips</a></li>
 <li><a onclick="showNotification('Taking good photos')">Taking good photos</a></li>
-</ul>
-</div>
-<div class="topic">
-<h3>Account</h3>
-<ul>
+</ul></div>
+<div class="topic"><h3>Account</h3><ul>
 <li><a onclick="showNotification('How to register')">How to register</a></li>
 <li><a onclick="showNotification('Manage your ads')">Manage your ads</a></li>
 <li><a onclick="showNotification('Account settings')">Account settings</a></li>
-</ul>
-</div>
-<div class="topic">
-<h3>Safety</h3>
-<ul>
+</ul></div>
+<div class="topic"><h3>Safety</h3><ul>
 <li><a onclick="showNotification('Safety tips')">Safety tips</a></li>
 <li><a onclick="showNotification('Avoiding scams')">Avoiding scams</a></li>
 <li><a onclick="showNotification('Report suspicious activity')">Report suspicious activity</a></li>
-</ul>
-</div>
+</ul></div>
 </div>
 </div>
 <div class="contact-form-section">
 <h2>Send Us a Message</h2>
 <form onsubmit="handleContactSubmit(event)">
-<div class="form-group">
-<label>Your Name</label>
-<input type="text" required>
-</div>
-<div class="form-group">
-<label>Email</label>
-<input type="email" required>
-</div>
-<div class="form-group">
-<label>Subject</label>
-<select required>
-<option value="">Select a subject</option>
-<option>General Inquiry</option>
-<option>Technical Issue</option>
-<option>Report a Problem</option>
-<option>Account Issue</option>
-<option>Other</option>
-</select>
-</div>
-<div class="form-group">
-<label>Message</label>
-<textarea rows="5" required></textarea>
-</div>
+<div class="form-group"><label>Your Name</label><input type="text" required></div>
+<div class="form-group"><label>Email</label><input type="email" required></div>
+<div class="form-group"><label>Subject</label><select required><option value="">Select a subject</option><option>General Inquiry</option><option>Technical Issue</option><option>Report a Problem</option><option>Account Issue</option><option>Other</option></select></div>
+<div class="form-group"><label>Message</label><textarea rows="5" required></textarea></div>
 <button type="submit" class="btn btn-primary">Send Message</button>
 </form>
 </div>
 </div>
 </div>
 </div>
-<!-- Footer -->
+
 <footer class="footer">
 <div class="container">
 <div class="footer-grid">
-<div>
-<h3>About MTRADE KE</h3>
-<p>Kenya's trusted marketplace for buying and selling. Connect with buyers and sellers across Kenya.</p>
-</div>
-<div>
-<h3>Quick Links</h3>
-<ul>
+<div><h3>About MTRADE KE</h3><p>Kenya's trusted marketplace for buying and selling. Connect with buyers and sellers across Kenya.</p></div>
+<div><h3>Quick Links</h3><ul>
 <li><a onclick="showPage('customer-service')">Customer Service</a></li>
 <li><a onclick="showNotification('How to Buy guide')">How to Buy</a></li>
 <li><a onclick="showNotification('How to Sell guide')">How to Sell</a></li>
 <li><a onclick="showNotification('Safety Tips')">Safety Tips</a></li>
-</ul>
+</ul></div>
+<div><h3>Contact Us</h3><p><i class="fas fa-phone"></i> +254 700 000 000</p><p><i class="fas fa-envelope"></i> support@mtradeke.co.ke</p><p><i class="fas fa-map-marker-alt"></i> Nairobi, Kenya</p></div>
 </div>
-<div>
-<h3>Contact Us</h3>
-<p><i class="fas fa-phone"></i> +254 700 000 000</p>
-<p><i class="fas fa-envelope"></i> support@mtradeke.co.ke</p>
-<p><i class="fas fa-map-marker-alt"></i> Nairobi, Kenya</p>
-</div>
-</div>
-<div class="footer-bottom">
-<p>&copy; 2026 MTRADE KE. All rights reserved.</p>
-</div>
+<div class="footer-bottom"><p>&copy; 2026 MTRADE KE. All rights reserved.</p></div>
 </div>
 </footer>
+
 <script>
-// Data Storage with REAL IMAGES
+// ==========================================
+// FIREBASE CONFIGURATION - REPLACE WITH YOURS
+// ==========================================
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// Categories with images and brands
 const categories = [
-{ 
-  name: 'Vehicles', 
-  image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop',
-  subcategories: ['Cars', 'Motorcycles', 'Trucks', 'Vehicle Parts & Accessories', 'Buses & Microbuses', 'Construction & Heavy Machinery'],
-  brands: ['Toyota', 'Nissan', 'Mazda', 'Subaru', 'Mitsubishi', 'Honda', 'Hyundai', 'Kia', 'BMW', 'Mercedes-Benz', 'Volkswagen', 'Audi', 'Lexus', 'Land Rover', 'Range Rover', 'Isuzu', 'Suzuki', 'Daihatsu', 'Other']
-},
-{ 
-  name: 'Property', 
-  image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop',
-  subcategories: ['Houses & Apartments For Rent', 'Houses & Apartments For Sale', 'Land & Plots For Sale', 'Land & Plots For Rent', 'Short Let', 'Commercial Property For Sale', 'Commercial Property For Rent', 'Event Centres, Venues & Workstations'],
-  brands: []
-},
-{ 
-  name: 'Electronics', 
-  image: 'https://images.unsplash.com/photo-1498049794561-7782e0144367?w=400&h=300&fit=crop',
-  subcategories: ['Mobile Phones', 'Tablets', 'Accessories for Phones & Tablets', 'Computers & Laptops', 'Computer Accessories', 'TVs & DVD Equipment', 'Audio & Music Equipment', 'Cameras & Lenses', 'Video Games & Consoles', 'Smart Watches', 'Headphones'],
-  brands: ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo', 'Tecno', 'Infinix', 'Nokia', 'LG', 'Sony', 'HP', 'Dell', 'Lenovo', 'Asus', 'Acer', 'Toshiba', 'Canon', 'Nikon', 'Panasonic', 'Other']
-},
-{ 
-  name: 'Home & Kitchen', 
-  image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&h=300&fit=crop',
-  subcategories: ['Furniture', 'Home Appliances', 'Kitchen Tools & Utensils', 'Home Decor', 'Bedding & Bath', 'Garden & Outdoor', 'Lighting', 'Storage & Organization'],
-  brands: []
-},
-{ 
-  name: 'Fashion', 
-  image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=300&fit=crop',
-  subcategories: ['Clothing', 'Shoes', 'Bags', 'Watches', 'Jewelry & Accessories', 'Sunglasses', 'Belts'],
-  brands: ['Nike', 'Adidas', 'Puma', 'Zara', 'H&M', 'Gucci', 'Louis Vuitton', 'Chanel', 'Prada', 'Other']
-},
-{ 
-  name: 'Sports', 
-  image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop',
-  subcategories: ['Exercise Equipment', 'Sports Gear', 'Bicycles', 'Outdoor Sports', 'Team Sports', 'Water Sports'],
-  brands: []
-},
-{ 
-  name: 'Services', 
-  image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a782?w=400&h=300&fit=crop',
-  subcategories: ['Repair & Construction', 'Cleaning Services', 'Moving & Storage', 'Lessons & Training', 'Beauty & Wellness', 'Event Services', 'Computer & IT Services', 'Automotive Services', 'Legal & Financial Services'],
-  brands: []
-},
-{ 
-  name: 'Jobs', 
-  image: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=300&fit=crop',
-  subcategories: ['Full-time', 'Part-time', 'Freelance', 'Internship', 'Remote Work', 'Contract Work'],
-  brands: []
-}
+{ name: 'Vehicles', image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop', subcategories: ['Cars', 'Motorcycles', 'Trucks', 'Vehicle Parts & Accessories', 'Buses & Microbuses', 'Construction & Heavy Machinery'], brands: ['Toyota', 'Nissan', 'Mazda', 'Subaru', 'Mitsubishi', 'Honda', 'Hyundai', 'Kia', 'BMW', 'Mercedes-Benz', 'Volkswagen', 'Audi', 'Lexus', 'Land Rover', 'Range Rover', 'Isuzu', 'Suzuki', 'Daihatsu', 'Other'] },
+{ name: 'Property', image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop', subcategories: ['Houses & Apartments For Rent', 'Houses & Apartments For Sale', 'Land & Plots For Sale', 'Land & Plots For Rent', 'Short Let', 'Commercial Property For Sale', 'Commercial Property For Rent', 'Event Centres, Venues & Workstations'], brands: [] },
+{ name: 'Electronics', image: 'https://images.unsplash.com/photo-1498049794561-7782e0144367?w=400&h=300&fit=crop', subcategories: ['Mobile Phones', 'Tablets', 'Accessories for Phones & Tablets', 'Computers & Laptops', 'Computer Accessories', 'TVs & DVD Equipment', 'Audio & Music Equipment', 'Cameras & Lenses', 'Video Games & Consoles', 'Smart Watches', 'Headphones'], brands: ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo', 'Tecno', 'Infinix', 'Nokia', 'LG', 'Sony', 'HP', 'Dell', 'Lenovo', 'Asus', 'Acer', 'Toshiba', 'Canon', 'Nikon', 'Panasonic', 'Other'] },
+{ name: 'Home & Kitchen', image: 'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&h=300&fit=crop', subcategories: ['Furniture', 'Home Appliances', 'Kitchen Tools & Utensils', 'Home Decor', 'Bedding & Bath', 'Garden & Outdoor', 'Lighting', 'Storage & Organization'], brands: [] },
+{ name: 'Fashion', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=300&fit=crop', subcategories: ['Clothing', 'Shoes', 'Bags', 'Watches', 'Jewelry & Accessories', 'Sunglasses', 'Belts'], brands: ['Nike', 'Adidas', 'Puma', 'Zara', 'H&M', 'Gucci', 'Louis Vuitton', 'Chanel', 'Prada', 'Other'] },
+{ name: 'Sports', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop', subcategories: ['Exercise Equipment', 'Sports Gear', 'Bicycles', 'Outdoor Sports', 'Team Sports', 'Water Sports'], brands: [] },
+{ name: 'Services', image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a782?w=400&h=300&fit=crop', subcategories: ['Repair & Construction', 'Cleaning Services', 'Moving & Storage', 'Lessons & Training', 'Beauty & Wellness', 'Event Services', 'Computer & IT Services', 'Automotive Services', 'Legal & Financial Services'], brands: [] },
+{ name: 'Jobs', image: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=300&fit=crop', subcategories: ['Full-time', 'Part-time', 'Freelance', 'Internship', 'Remote Work', 'Contract Work'], brands: [] }
 ];
 
-// Initialize localStorage
-if (!localStorage.getItem('users')) localStorage.setItem('users', JSON.stringify([]));
-if (!localStorage.getItem('products')) localStorage.setItem('products', JSON.stringify([]));
-if (!localStorage.getItem('currentUser')) localStorage.setItem('currentUser', null);
-
-// Global variables for filtering
 let currentCategory = null;
 let currentSubcategory = null;
 let currentSort = 'newest';
+let uploadedImages = [];
 
-// Helper Functions
 function showNotification(message, type = 'success') {
 const notification = document.createElement('div');
 notification.className = `notification notification-${type}`;
@@ -668,13 +478,9 @@ setTimeout(() => notification.remove(), 3000);
 function showPage(pageName) {
 document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
 const pageMap = {
-'home': 'homePage',
-'login': 'loginPage',
-'register': 'registerPage',
-'post-ad': 'postAdPage',
-'my-ads': 'myAdsPage',
-'product-details': 'productDetailsPage',
-'customer-service': 'customerServicePage'
+'home': 'homePage', 'login': 'loginPage', 'register': 'registerPage',
+'post-ad': 'postAdPage', 'my-ads': 'myAdsPage',
+'product-details': 'productDetailsPage', 'customer-service': 'customerServicePage'
 };
 const pageId = pageMap[pageName];
 if (pageId) {
@@ -682,136 +488,81 @@ document.getElementById(pageId).classList.add('active');
 window.scrollTo(0, 0);
 }
 updateHeader();
-if (pageName === 'home') {
-loadHomeContent();
-document.getElementById('navMenu').style.display = 'block';
-} else {
-document.getElementById('navMenu').style.display = 'none';
-}
+if (pageName === 'home') { loadHomeContent(); document.getElementById('navMenu').style.display = 'block'; }
+else { document.getElementById('navMenu').style.display = 'none'; }
 if (pageName === 'my-ads') loadMyAds();
 }
 
-function showCategoryDetail(categoryName) {
-currentCategory = categoryName;
-currentSubcategory = null;
-const category = categories.find(c => c.name === categoryName);
-if (!category) return;
-
-document.getElementById('categoryTitle').textContent = categoryName;
-document.getElementById('categoryDescription').textContent = `Find the best deals on ${categoryName.toLowerCase()} in Kenya - ${getCategoryCount(categoryName)} ads available`;
-
-// Load subcategories
-const subcategoryList = document.getElementById('subcategoryList');
-subcategoryList.innerHTML = `
-<li><a onclick="loadCategoryProducts('${categoryName}', '')" class="active">All ${categoryName} <span class="count">${getCategoryCount(categoryName)}</span></a></li>
-` + category.subcategories.map(sub => {
-const count = getSubcategoryCount(categoryName, sub);
-return `<li><a onclick="loadCategoryProducts('${categoryName}', '${sub}')">${sub} <span class="count">${count}</span></a></li>`;
-}).join('');
-
-// Show/hide brand filter for vehicles
-const brandFilterGroup = document.getElementById('brandFilterGroup');
-if (categoryName === 'Vehicles' || categoryName === 'Electronics' || categoryName === 'Fashion') {
-brandFilterGroup.style.display = 'block';
-loadBrands(category);
-} else {
-brandFilterGroup.style.display = 'none';
-}
-
-// Load products
-loadCategoryProducts(categoryName, '');
-
-// Show page
-document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-document.getElementById('categoryDetailPage').classList.add('active');
-window.scrollTo(0, 0);
-updateHeader();
-document.getElementById('navMenu').style.display = 'block';
-}
-
-function loadBrands(category) {
-const brandSelect = document.getElementById('brandSelect');
-brandSelect.innerHTML = '<option value="">All Brands</option>';
-if (category.brands && category.brands.length > 0) {
-category.brands.forEach(brand => {
-brandSelect.innerHTML += `<option value="${brand}">${brand}</option>`;
-});
-}
-}
-
-function loadCategoryProducts(categoryName, subcategory) {
-currentSubcategory = subcategory;
-let products = JSON.parse(localStorage.getItem('products'));
-
-// Filter by category
-products = products.filter(p => p.category === categoryName && p.status === 'active');
-
-// Filter by subcategory if selected
-if (subcategory) {
-products = products.filter(p => p.subcategory === subcategory);
-}
-
-// Filter by brand if selected
-const selectedBrand = document.getElementById('brandSelect').value;
-if (selectedBrand && (categoryName === 'Vehicles' || categoryName === 'Electronics' || categoryName === 'Fashion')) {
-products = products.filter(p => p.brand === selectedBrand);
-}
-
-// Filter by condition
-const selectedCondition = document.getElementById('conditionFilter').value;
-if (selectedCondition) {
-products = products.filter(p => p.condition === selectedCondition);
-}
-
-// Filter by price range
-const minPrice = document.getElementById('minPrice').value;
-const maxPrice = document.getElementById('maxPrice').value;
-if (minPrice) {
-products = products.filter(p => parseInt(p.price) >= parseInt(minPrice));
-}
-if (maxPrice) {
-products = products.filter(p => parseInt(p.price) <= parseInt(maxPrice));
-}
-
-// Sort products
-products = sortProductsArray(products, currentSort);
-
-// Update UI
-document.getElementById('categoryProductsTitle').textContent = subcategory || `All ${categoryName}`;
-document.getElementById('resultsCount').textContent = `${products.length} ad${products.length !== 1 ? 's' : ''} found`;
-
-const productsGrid = document.getElementById('categoryProductsGrid');
-if (products.length === 0) {
-productsGrid.innerHTML = `
-<div class="empty-state" style="grid-column: 1/-1;">
-<i class="fas fa-box-open"></i>
-<h2>No ads found</h2>
-<p>Try adjusting your filters or check back later</p>
-<button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button>
+function updateHeader() {
+const user = auth.currentUser;
+const headerActions = document.getElementById('headerActions');
+if (user) {
+headerActions.innerHTML = `
+<button class="btn btn-primary" onclick="showPage('post-ad')"><i class="fas fa-plus"></i> Post Ad</button>
+<div class="user-menu">
+<span><i class="fas fa-user"></i> ${user.displayName || user.email}</span>
+<div class="dropdown">
+<a onclick="showPage('my-ads')">My Ads</a>
+<a onclick="handleLogout()">Logout</a>
 </div>
-`;
+</div>`;
 } else {
-productsGrid.innerHTML = products.map(product => createProductCard(product)).join('');
+headerActions.innerHTML = `
+<button class="btn btn-secondary" onclick="showPage('login')">Login</button>
+<button class="btn btn-primary" onclick="showPage('register')">Register</button>`;
+}
 }
 
-// Update active subcategory
-document.querySelectorAll('.subcategory-list a').forEach(link => link.classList.remove('active'));
-if (subcategory) {
-const activeLink = Array.from(document.querySelectorAll('.subcategory-list a')).find(link => link.textContent.includes(subcategory));
-if (activeLink) activeLink.classList.add('active');
-} else {
-document.querySelector('.subcategory-list a').classList.add('active');
+async function loadHomeContent() {
+const categoriesGrid = document.getElementById('categoriesGrid');
+categoriesGrid.innerHTML = categories.map(cat => `
+<div class="category-card" onclick="showCategoryDetail('${cat.name}')">
+<img src="${cat.image}" alt="${cat.name}" class="category-image">
+<div class="category-info">
+<h3>${cat.name}</h3>
+<p>Loading...</p>
+</div>
+</div>`).join('');
+
+// Get counts from Firebase
+categories.forEach(async (cat) => {
+const snapshot = await db.collection('products').where('category', '==', cat.name).where('status', '==', 'active').get();
+const count = snapshot.size;
+const card = categoriesGrid.querySelector(`.category-card:nth-child(${categories.indexOf(cat) + 1}) p`);
+if (card) card.textContent = `${count} ads available`;
+});
+
+loadProducts();
 }
+
+async function loadProducts(categoryFilter = null) {
+const productsGrid = document.getElementById('productsGrid');
+productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading products...</p></div>';
+
+let query = db.collection('products').where('status', '==', 'active');
+if (categoryFilter) query = query.where('category', '==', categoryFilter);
+
+const snapshot = await query.orderBy('createdAt', 'desc').limit(12).get();
+
+if (snapshot.empty) {
+productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
+<i class="fas fa-box-open"></i><h2>No products yet</h2>
+<p>Be the first to post an ad!</p>
+<button class="btn btn-primary" onclick="showPage('post-ad')">Post Ad Now</button></div>`;
+return;
+}
+
+const products = [];
+snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+
+productsGrid.innerHTML = products.map(product => createProductCard(product)).join('');
 }
 
 function createProductCard(product) {
 return `
 <div class="product-card" onclick="viewProduct('${product.id}')">
 <div class="product-image">
-${product.images && product.images.length > 0
-? `<img src="${product.images[0]}" alt="${product.title}">`
-: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ddd;color:#999;"><i class="fas fa-image" style="font-size:48px;"></i></div>'
-}
+${product.images && product.images.length > 0 ? `<img src="${product.images[0]}" alt="${product.title}">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ddd;color:#999;"><i class="fas fa-image" style="font-size:48px;"></i></div>'}
 <span class="product-price">KSh ${parseInt(product.price).toLocaleString()}</span>
 ${product.condition === 'New' ? '<span class="product-badge">NEW</span>' : ''}
 </div>
@@ -824,23 +575,102 @@ ${product.condition === 'New' ? '<span class="product-badge">NEW</span>' : ''}
 ${product.brand ? `<span><i class="fas fa-certificate"></i> ${product.brand}</span>` : ''}
 </div>
 </div>
-</div>
-`;
+</div>`;
+}
+
+async function showCategoryDetail(categoryName) {
+currentCategory = categoryName;
+currentSubcategory = null;
+const category = categories.find(c => c.name === categoryName);
+if (!category) return;
+
+document.getElementById('categoryTitle').textContent = categoryName;
+document.getElementById('categoryDescription').textContent = `Find the best deals on ${categoryName.toLowerCase()} in Kenya`;
+
+// Load subcategories
+const subcategoryList = document.getElementById('subcategoryList');
+const snapshot = await db.collection('products').where('category', '==', categoryName).where('status', '==', 'active').get();
+const totalCount = snapshot.size;
+
+subcategoryList.innerHTML = `<li><a onclick="loadCategoryProducts('${categoryName}', '')" class="active">All ${categoryName} <span class="count">${totalCount}</span></a></li>` +
+category.subcategories.map(sub => `<li><a onclick="loadCategoryProducts('${categoryName}', '${sub}')">${sub} <span class="count">-</span></a></li>`).join('');
+
+// Show/hide brand filter
+const brandFilterGroup = document.getElementById('brandFilterGroup');
+if (categoryName === 'Vehicles' || categoryName === 'Electronics' || categoryName === 'Fashion') {
+brandFilterGroup.style.display = 'block';
+const brandSelect = document.getElementById('brandSelect');
+brandSelect.innerHTML = '<option value="">All Brands</option>' + category.brands.map(b => `<option value="${b}">${b}</option>`).join('');
+} else {
+brandFilterGroup.style.display = 'none';
+}
+
+loadCategoryProducts(categoryName, '');
+
+document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+document.getElementById('categoryDetailPage').classList.add('active');
+window.scrollTo(0, 0);
+updateHeader();
+document.getElementById('navMenu').style.display = 'block';
+}
+
+async function loadCategoryProducts(categoryName, subcategory) {
+currentSubcategory = subcategory;
+const productsGrid = document.getElementById('categoryProductsGrid');
+productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading...</p></div>';
+
+let query = db.collection('products').where('category', '==', categoryName).where('status', '==', 'active');
+
+if (subcategory) query = query.where('subcategory', '==', subcategory);
+
+const snapshot = await query.get();
+let products = [];
+snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+
+// Apply filters
+const minPrice = document.getElementById('minPrice').value;
+const maxPrice = document.getElementById('maxPrice').value;
+const condition = document.getElementById('conditionFilter').value;
+const brand = document.getElementById('brandSelect').value;
+
+if (minPrice) products = products.filter(p => parseInt(p.price) >= parseInt(minPrice));
+if (maxPrice) products = products.filter(p => parseInt(p.price) <= parseInt(maxPrice));
+if (condition) products = products.filter(p => p.condition === condition);
+if (brand) products = products.filter(p => p.brand === brand);
+
+// Sort
+products = sortProductsArray(products, currentSort);
+
+document.getElementById('categoryProductsTitle').textContent = subcategory || `All ${categoryName}`;
+document.getElementById('resultsCount').textContent = `${products.length} ad${products.length !== 1 ? 's' : ''} found`;
+
+if (products.length === 0) {
+productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
+<i class="fas fa-box-open"></i><h2>No ads found</h2>
+<p>Try adjusting your filters</p>
+<button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button></div>`;
+} else {
+productsGrid.innerHTML = products.map(p => createProductCard(p)).join('');
+}
+
+// Update active subcategory
+document.querySelectorAll('.subcategory-list a').forEach(link => link.classList.remove('active'));
+if (subcategory) {
+const activeLink = Array.from(document.querySelectorAll('.subcategory-list a')).find(link => link.textContent.includes(subcategory));
+if (activeLink) activeLink.classList.add('active');
+} else {
+document.querySelector('.subcategory-list a').classList.add('active');
+}
 }
 
 function sortProductsArray(products, sortType) {
 const sorted = [...products];
 switch(sortType) {
-case 'newest':
-return sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-case 'oldest':
-return sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-case 'price-low':
-return sorted.sort((a, b) => parseInt(a.price) - parseInt(b.price));
-case 'price-high':
-return sorted.sort((a, b) => parseInt(b.price) - parseInt(a.price));
-default:
-return sorted;
+case 'newest': return sorted.sort((a, b) => b.createdAt - a.createdAt);
+case 'oldest': return sorted.sort((a, b) => a.createdAt - b.createdAt);
+case 'price-low': return sorted.sort((a, b) => parseInt(a.price) - parseInt(b.price));
+case 'price-high': return sorted.sort((a, b) => parseInt(b.price) - parseInt(a.price));
+default: return sorted;
 }
 }
 
@@ -866,118 +696,25 @@ document.querySelector('.sort-btn').classList.add('active');
 loadCategoryProducts(currentCategory, currentSubcategory);
 }
 
-function updateHeader() {
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-const headerActions = document.getElementById('headerActions');
-if (currentUser) {
-headerActions.innerHTML = `
-<button class="btn btn-primary" onclick="showPage('post-ad')"><i class="fas fa-plus"></i> Post Ad</button>
-<div class="user-menu">
-<span><i class="fas fa-user"></i> ${currentUser.name}</span>
-<div class="dropdown">
-<a onclick="showPage('my-ads')">My Ads</a>
-<a onclick="handleLogout()">Logout</a>
-</div>
-</div>
-`;
-} else {
-headerActions.innerHTML = `
-<button class="btn btn-secondary" onclick="showPage('login')">Login</button>
-<button class="btn btn-primary" onclick="showPage('register')">Register</button>
-`;
-}
-}
+async function viewProduct(productId) {
+const doc = await db.collection('products').doc(productId).get();
+if (!doc.exists) { showNotification('Product not found', 'error'); return; }
 
-function loadHomeContent() {
-const categoriesGrid = document.getElementById('categoriesGrid');
-categoriesGrid.innerHTML = categories.map(cat => `
-<div class="category-card" onclick="showCategoryDetail('${cat.name}')">
-<img src="${cat.image}" alt="${cat.name}" class="category-image">
-<div class="category-info">
-<h3>${cat.name}</h3>
-<p>${getCategoryCount(cat.name)} ads available</p>
-</div>
-</div>
-`).join('');
-loadProducts();
-}
-
-function getCategoryCount(categoryName) {
-const products = JSON.parse(localStorage.getItem('products'));
-return products.filter(p => p.category === categoryName && p.status === 'active').length;
-}
-
-function getSubcategoryCount(categoryName, subcategory) {
-const products = JSON.parse(localStorage.getItem('products'));
-return products.filter(p => p.category === categoryName && p.subcategory === subcategory && p.status === 'active').length;
-}
-
-function loadProducts(categoryFilter = null) {
-const products = JSON.parse(localStorage.getItem('products'));
-const filteredProducts = categoryFilter
-? products.filter(p => p.category === categoryFilter && p.status === 'active')
-: products.filter(p => p.status === 'active');
-const productsGrid = document.getElementById('productsGrid');
-if (filteredProducts.length === 0) {
-productsGrid.innerHTML = `
-<div class="empty-state" style="grid-column: 1/-1;">
-<i class="fas fa-box-open"></i>
-<h2>No products yet</h2>
-<p>Be the first to post an ad in this category!</p>
-<button class="btn btn-primary" onclick="showPage('post-ad')">Post Ad Now</button>
-</div>
-`;
-return;
-}
-productsGrid.innerHTML = filteredProducts.slice(0, 12).map(product => createProductCard(product)).join('');
-}
-
-function viewProduct(productId) {
-const products = JSON.parse(localStorage.getItem('products'));
-const product = products.find(p => p.id === productId);
-if (!product) {
-showNotification('Product not found', 'error');
-return;
-}
+const product = { id: doc.id, ...doc.data() };
 const detailsContainer = document.getElementById('productDetails');
+
 detailsContainer.innerHTML = `
 <h1>${product.title}</h1>
-${product.images && product.images.length > 0
-? `<img src="${product.images[0]}" alt="${product.title}" class="product-main-image">`
-: ''
-}
+${product.images && product.images.length > 0 ? `<img src="${product.images[0]}" alt="${product.title}" class="product-main-image">` : ''}
 <div class="product-meta">
-<div class="meta-item">
-<i class="fas fa-tag"></i>
-<span><strong>Price:</strong> KSh ${parseInt(product.price).toLocaleString()}</span>
+<div class="meta-item"><i class="fas fa-tag"></i><span><strong>Price:</strong> KSh ${parseInt(product.price).toLocaleString()}</span></div>
+<div class="meta-item"><i class="fas fa-folder"></i><span><strong>Category:</strong> ${product.category} ${product.subcategory ? `- ${product.subcategory}` : ''}</span></div>
+<div class="meta-item"><i class="fas fa-map-marker-alt"></i><span><strong>Location:</strong> ${product.location}</span></div>
+<div class="meta-item"><i class="fas fa-tools"></i><span><strong>Condition:</strong> ${product.condition}</span></div>
+${product.brand ? `<div class="meta-item"><i class="fas fa-certificate"></i><span><strong>Brand:</strong> ${product.brand}</span></div>` : ''}
+<div class="meta-item"><i class="fas fa-calendar"></i><span><strong>Posted:</strong> ${formatDate(product.createdAt)}</span></div>
 </div>
-<div class="meta-item">
-<i class="fas fa-folder"></i>
-<span><strong>Category:</strong> ${product.category} ${product.subcategory ? `- ${product.subcategory}` : ''}</span>
-</div>
-<div class="meta-item">
-<i class="fas fa-map-marker-alt"></i>
-<span><strong>Location:</strong> ${product.location}</span>
-</div>
-<div class="meta-item">
-<i class="fas fa-tools"></i>
-<span><strong>Condition:</strong> ${product.condition}</span>
-</div>
-${product.brand ? `
-<div class="meta-item">
-<i class="fas fa-certificate"></i>
-<span><strong>Brand:</strong> ${product.brand}</span>
-</div>
-` : ''}
-<div class="meta-item">
-<i class="fas fa-calendar"></i>
-<span><strong>Posted:</strong> ${formatDate(product.createdAt)}</span>
-</div>
-</div>
-<div class="form-section">
-<h3>Description</h3>
-<p>${product.description}</p>
-</div>
+<div class="form-section"><h3>Description</h3><p>${product.description}</p></div>
 <div class="seller-info">
 <h3>Seller Information</h3>
 <p><i class="fas fa-user"></i> <strong>Name:</strong> ${product.sellerName}</p>
@@ -988,66 +725,51 @@ ${product.brand ? `
 <a href="mailto:${product.sellerEmail}" class="btn btn-secondary btn-lg"><i class="fas fa-envelope"></i> Email Seller</a>
 </div>
 </div>
-<div class="form-actions">
-<button class="btn btn-secondary" onclick="showPage('home')">← Back to Home</button>
-</div>
-`;
+<div class="form-actions"><button class="btn btn-secondary" onclick="showPage('home')">← Back to Home</button></div>`;
+
 showPage('product-details');
 }
 
-function handleRegister(event) {
+async function handleRegister(event) {
 event.preventDefault();
 const formData = new FormData(event.target);
 const data = Object.fromEntries(formData);
-const users = JSON.parse(localStorage.getItem('users'));
-if (users.find(u => u.email === data.email)) {
-showNotification('Email already registered', 'error');
-return;
-}
-const newUser = {
-id: Date.now().toString(),
+
+try {
+const userCredential = await auth.createUserWithEmailAndPassword(data.email, data.password);
+await userCredential.user.updateProfile({ displayName: data.name });
+
+await db.collection('users').doc(userCredential.user.uid).set({
 name: data.name,
 email: data.email,
 phone: data.phone,
 location: data.location,
-password: data.password
-};
-users.push(newUser);
-localStorage.setItem('users', JSON.stringify(users));
-localStorage.setItem('currentUser', JSON.stringify({
-id: newUser.id,
-name: newUser.name,
-email: newUser.email,
-phone: newUser.phone,
-location: newUser.location
-}));
+createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
+
 showNotification('Registration successful!');
 showPage('home');
+} catch (error) {
+showNotification(error.message, 'error');
+}
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
 event.preventDefault();
 const formData = new FormData(event.target);
 const data = Object.fromEntries(formData);
-const users = JSON.parse(localStorage.getItem('users'));
-const user = users.find(u => u.email === data.email && u.password === data.password);
-if (!user) {
-showNotification('Invalid email or password', 'error');
-return;
-}
-localStorage.setItem('currentUser', JSON.stringify({
-id: user.id,
-name: user.name,
-email: user.email,
-phone: user.phone,
-location: user.location
-}));
+
+try {
+await auth.signInWithEmailAndPassword(data.email, data.password);
 showNotification('Login successful!');
 showPage('home');
+} catch (error) {
+showNotification('Invalid email or password', 'error');
+}
 }
 
-function handleLogout() {
-localStorage.setItem('currentUser', null);
+async function handleLogout() {
+await auth.signOut();
 showNotification('Logged out successfully');
 showPage('home');
 }
@@ -1057,6 +779,7 @@ const category = document.getElementById('categorySelect').value;
 const subcategorySelect = document.getElementById('subcategorySelect');
 const brandGroup = document.getElementById('brandGroup');
 const cat = categories.find(c => c.name === category);
+
 subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
 if (cat && cat.subcategories) {
 cat.subcategories.forEach(sub => {
@@ -1066,7 +789,7 @@ option.textContent = sub;
 subcategorySelect.appendChild(option);
 });
 }
-// Show brand field for specific categories
+
 if (category === 'Vehicles' || category === 'Electronics' || category === 'Fashion') {
 brandGroup.style.display = 'block';
 } else {
@@ -1074,12 +797,10 @@ brandGroup.style.display = 'none';
 }
 }
 
-let uploadedImages = [];
 function previewImages(event) {
 const files = event.target.files;
-const preview = document.getElementById('imagePreview');
-Array.from(files).forEach(file => {
-if (file.type.startsWith('image/') && uploadedImages.length < 5) {
+Array.from(files).slice(0, 5).forEach(file => {
+if (file.type.startsWith('image/')) {
 const reader = new FileReader();
 reader.onload = function(e) {
 uploadedImages.push(e.target.result);
@@ -1089,84 +810,84 @@ reader.readAsDataURL(file);
 }
 });
 }
+
 function updateImagePreview() {
 const preview = document.getElementById('imagePreview');
 preview.innerHTML = uploadedImages.map((img, index) => `
 <div class="preview-image">
 <img src="${img}" alt="Preview">
 <button type="button" class="remove-img" onclick="removeImage(${index})">×</button>
-</div>
-`).join('');
+</div>`).join('');
 }
+
 function removeImage(index) {
 uploadedImages.splice(index, 1);
 updateImagePreview();
 }
 
-function handlePostAd(event) {
+async function handlePostAd(event) {
 event.preventDefault();
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-if (!currentUser) {
-showNotification('Please login first', 'error');
-showPage('login');
-return;
-}
+const user = auth.currentUser;
+if (!user) { showNotification('Please login first', 'error'); showPage('login'); return; }
+
 const formData = new FormData(event.target);
 const data = Object.fromEntries(formData);
-const newProduct = {
-id: Date.now().toString(),
+
+try {
+const userData = await db.collection('users').doc(user.uid).get();
+const userInfo = userData.data();
+
+await db.collection('products').add({
 title: data.title,
 description: data.description,
 price: data.price,
 category: data.category,
-subcategory: data.subcategory,
+subcategory: data.subcategory || '',
 brand: data.brand || '',
 location: data.location,
 condition: data.condition,
 images: uploadedImages,
-sellerId: currentUser.id,
-sellerName: currentUser.name,
-sellerPhone: currentUser.phone,
-sellerEmail: currentUser.email,
-createdAt: new Date().toISOString(),
+sellerId: user.uid,
+sellerName: userInfo.name || user.displayName || user.email,
+sellerPhone: userInfo.phone || '',
+sellerEmail: userInfo.email || user.email,
+createdAt: firebase.firestore.FieldValue.serverTimestamp(),
 status: 'active'
-};
-const products = JSON.parse(localStorage.getItem('products'));
-products.unshift(newProduct);
-localStorage.setItem('products', JSON.stringify(products));
+});
+
 uploadedImages = [];
 document.getElementById('imagePreview').innerHTML = '';
 event.target.reset();
-showNotification('Ad posted successfully!');
+showNotification('🎉 Ad posted successfully!');
 showPage('my-ads');
+} catch (error) {
+showNotification('Error posting ad: ' + error.message, 'error');
+}
 }
 
-function loadMyAds() {
-const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-if (!currentUser) {
-showPage('login');
-return;
-}
-const products = JSON.parse(localStorage.getItem('products'));
-const myAds = products.filter(p => p.sellerId === currentUser.id);
+async function loadMyAds() {
+const user = auth.currentUser;
+if (!user) { showPage('login'); return; }
+
 const container = document.getElementById('myAdsList');
-if (myAds.length === 0) {
-container.innerHTML = `
-<div class="empty-state">
-<i class="fas fa-ad"></i>
-<h2>No ads yet</h2>
-<p>You haven't posted any ads yet. Start selling now!</p>
-<button class="btn btn-primary" onclick="showPage('post-ad')">Post Your First Ad</button>
-</div>
-`;
+container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading your ads...</p></div>';
+
+const snapshot = await db.collection('products').where('sellerId', '==', user.uid).orderBy('createdAt', 'desc').get();
+
+if (snapshot.empty) {
+container.innerHTML = `<div class="empty-state">
+<i class="fas fa-ad"></i><h2>No ads yet</h2>
+<p>You haven't posted any ads yet.</p>
+<button class="btn btn-primary btn-lg" onclick="showPage('post-ad')">Post Your First Ad</button></div>`;
 return;
 }
-container.innerHTML = myAds.map(ad => `
+
+const ads = [];
+snapshot.forEach(doc => ads.push({ id: doc.id, ...doc.data() }));
+
+container.innerHTML = ads.map(ad => `
 <div class="my-ad-item">
-${ad.images && ad.images.length > 0
-? `<img src="${ad.images[0]}" alt="${ad.title}">`
-: '<div style="width:150px;height:150px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;"><i class="fas fa-image" style="font-size:48px;"></i></div>'
-}
+${ad.images && ad.images.length > 0 ? `<img src="${ad.images[0]}" alt="${ad.title}">` : '<div style="width:150px;height:150px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;"><i class="fas fa-image" style="font-size:48px;"></i></div>'}
 <div class="my-ad-info">
 <h3>${ad.title}</h3>
 <p><strong>Price:</strong> KSh ${parseInt(ad.price).toLocaleString()}</p>
@@ -1178,70 +899,72 @@ ${ad.brand ? `<p><strong>Brand:</strong> ${ad.brand}</p>` : ''}
 <div class="my-ad-actions">
 <button class="btn btn-secondary" onclick="viewProduct('${ad.id}')">View</button>
 <button class="btn btn-danger" onclick="deleteAd('${ad.id}')">Delete</button>
-<button class="btn btn-primary" onclick="markAsSold('${ad.id}')">Mark as Sold</button>
+<button class="btn btn-primary" onclick="markAsSold('${ad.id}')">${ad.status === 'active' ? 'Mark as Sold' : 'Mark Active'}</button>
 </div>
 </div>
-</div>
-`).join('');
+</div>`).join('');
 }
 
-function deleteAd(productId) {
-if (!confirm('Are you sure you want to delete this ad?')) return;
-const products = JSON.parse(localStorage.getItem('products'));
-const filtered = products.filter(p => p.id !== productId);
-localStorage.setItem('products', JSON.stringify(filtered));
-showNotification('Ad deleted successfully');
+async function deleteAd(productId) {
+if (!confirm('Delete this ad?')) return;
+try {
+await db.collection('products').doc(productId).delete();
+showNotification('Ad deleted');
 loadMyAds();
+} catch (error) {
+showNotification('Error deleting ad', 'error');
+}
 }
 
-function markAsSold(productId) {
-const products = JSON.parse(localStorage.getItem('products'));
-const product = products.find(p => p.id === productId);
-if (product) {
-product.status = product.status === 'active' ? 'sold' : 'active';
-localStorage.setItem('products', JSON.stringify(products));
-showNotification(`Ad marked as ${product.status}`);
+async function markAsSold(productId) {
+try {
+const doc = await db.collection('products').doc(productId).get();
+const currentStatus = doc.data().status;
+await db.collection('products').doc(productId).update({ status: currentStatus === 'active' ? 'sold' : 'active' });
+showNotification('Ad updated');
 loadMyAds();
+} catch (error) {
+showNotification('Error updating ad', 'error');
 }
 }
 
-function search() {
+async function search() {
 const query = document.getElementById('searchInput').value.toLowerCase();
-if (!query.trim()) {
-showNotification('Please enter a search term', 'error');
-return;
-}
-const products = JSON.parse(localStorage.getItem('products'));
+if (!query.trim()) { showNotification('Enter search term', 'error'); return; }
+
+const productsGrid = document.getElementById('productsGrid');
+productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Searching...</p></div>';
+
+const snapshot = await db.collection('products').where('status', '==', 'active').get();
+const products = [];
+snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+
 const filtered = products.filter(p =>
 p.title.toLowerCase().includes(query) ||
 p.description.toLowerCase().includes(query) ||
 p.category.toLowerCase().includes(query) ||
 (p.brand && p.brand.toLowerCase().includes(query))
 );
-const productsGrid = document.getElementById('productsGrid');
+
 if (filtered.length === 0) {
-productsGrid.innerHTML = `
-<div class="empty-state" style="grid-column: 1/-1;">
-<i class="fas fa-search"></i>
-<h2>No results found</h2>
-<p>Try different keywords or check back later</p>
-</div>
-`;
+productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
+<i class="fas fa-search"></i><h2>No results found</h2></div>`;
 } else {
-productsGrid.innerHTML = filtered.map(product => createProductCard(product)).join('');
+productsGrid.innerHTML = filtered.map(p => createProductCard(p)).join('');
 }
-document.querySelector('.recent-ads h2').textContent = `Search Results for "${query}"`;
+document.querySelector('.recent-ads h2').textContent = `Search: "${query}"`;
 showPage('home');
 }
 
 function handleContactSubmit(event) {
 event.preventDefault();
-showNotification('Thank you for your message! We will get back to you soon.');
+showNotification('Message sent!');
 event.target.reset();
 }
 
-function formatDate(dateString) {
-const date = new Date(dateString);
+function formatDate(timestamp) {
+if (!timestamp) return 'Unknown';
+const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
 const now = new Date();
 const diffTime = Math.abs(now - date);
 const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -1251,7 +974,14 @@ if (diffDays < 7) return `${diffDays} days ago`;
 return date.toLocaleDateString();
 }
 
-// Initialize
+// Auth state listener
+auth.onAuthStateChanged(user => {
+updateHeader();
+if (user && document.getElementById('myAdsPage').classList.contains('active')) {
+loadMyAds();
+}
+});
+
 document.addEventListener('DOMContentLoaded', () => {
 updateHeader();
 loadHomeContent();
