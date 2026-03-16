@@ -5,10 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MTRADE KE - Buy and Sell Online in Kenya</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<!-- Supabase JS Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; }
@@ -287,7 +285,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 <form onsubmit="handleLogin(event)">
 <div class="form-group"><label>Email Address *</label><input type="email" name="email" required placeholder="john@example.com"></div>
 <div class="form-group"><label>Password *</label><input type="password" name="password" required placeholder="Your password"></div>
-<button type="submit" class="btn btn-primary btn-block">Login</button>
+<button type="submit" class="btn btn-primary btn-block" id="loginBtn">Login</button>
 </form>
 <p class="auth-link">Don't have an account? <a onclick="showPage('register')">Register here</a></p>
 </div>
@@ -305,7 +303,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 <div class="form-group"><label>Phone Number *</label><input type="tel" name="phone" required placeholder="0712 345 678"></div>
 <div class="form-group"><label>Location *</label><input type="text" name="location" required placeholder="Nairobi, Kenya"></div>
 <div class="form-group"><label>Password *</label><input type="password" name="password" required placeholder="Min 6 characters"></div>
-<button type="submit" class="btn btn-primary btn-block">Create Account</button>
+<button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
 </form>
 <p class="auth-link">Already have an account? <a onclick="showPage('login')">Login here</a></p>
 </div>
@@ -343,7 +341,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 <div class="form-group"><label>Upload Photos</label><input type="file" id="imageInput" multiple accept="image/*" onchange="previewImages(event)"><small>Supported formats: JPG, PNG. Max 5 images.</small><div id="imagePreview" class="image-preview"></div></div>
 </div>
 <div class="form-actions">
-<button type="submit" class="btn btn-primary btn-lg">Post Ad Now</button>
+<button type="submit" class="btn btn-primary btn-lg" id="postAdBtn">Post Ad Now</button>
 <button type="button" class="btn btn-secondary" onclick="showPage('home')">Cancel</button>
 </div>
 </form>
@@ -434,21 +432,13 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 
 <script>
 // ==========================================
-// FIREBASE CONFIGURATION - REPLACE WITH YOURS
+// SUPABASE CONFIGURATION - YOUR CREDENTIALS
 // ==========================================
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
+const SUPABASE_URL = 'https://ciccwaokvoyjxphppzvh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_KtAIequUlBXi3nGryChAg_vft8h...'; // ⚠️ REPLACE WITH YOUR FULL KEY
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
+// Initialize Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Categories with images and brands
 const categories = [
@@ -466,6 +456,7 @@ let currentCategory = null;
 let currentSubcategory = null;
 let currentSort = 'newest';
 let uploadedImages = [];
+let currentUser = null;
 
 function showNotification(message, type = 'success') {
 const notification = document.createElement('div');
@@ -494,13 +485,12 @@ if (pageName === 'my-ads') loadMyAds();
 }
 
 function updateHeader() {
-const user = auth.currentUser;
 const headerActions = document.getElementById('headerActions');
-if (user) {
+if (currentUser) {
 headerActions.innerHTML = `
 <button class="btn btn-primary" onclick="showPage('post-ad')"><i class="fas fa-plus"></i> Post Ad</button>
 <div class="user-menu">
-<span><i class="fas fa-user"></i> ${user.displayName || user.email}</span>
+<span><i class="fas fa-user"></i> ${currentUser.name || currentUser.email}</span>
 <div class="dropdown">
 <a onclick="showPage('my-ads')">My Ads</a>
 <a onclick="handleLogout()">Logout</a>
@@ -524,12 +514,16 @@ categoriesGrid.innerHTML = categories.map(cat => `
 </div>
 </div>`).join('');
 
-// Get counts from Firebase
+// Get counts from Supabase
 categories.forEach(async (cat) => {
-const snapshot = await db.collection('products').where('category', '==', cat.name).where('status', '==', 'active').get();
-const count = snapshot.size;
+const { count, error } = await supabase
+.from('products')
+.select('*', { count: 'exact', head: true })
+.eq('category', cat.name)
+.eq('status', 'active');
+
 const card = categoriesGrid.querySelector(`.category-card:nth-child(${categories.indexOf(cat) + 1}) p`);
-if (card) card.textContent = `${count} ads available`;
+if (card) card.textContent = `${count || 0} ads available`;
 });
 
 loadProducts();
@@ -539,12 +533,12 @@ async function loadProducts(categoryFilter = null) {
 const productsGrid = document.getElementById('productsGrid');
 productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading products...</p></div>';
 
-let query = db.collection('products').where('status', '==', 'active');
-if (categoryFilter) query = query.where('category', '==', categoryFilter);
+let query = supabase.from('products').select('*').eq('status', 'active');
+if (categoryFilter) query = query.eq('category', categoryFilter);
 
-const snapshot = await query.orderBy('createdAt', 'desc').limit(12).get();
+const { data: products, error } = await query.order('created_at', { ascending: false }).limit(12);
 
-if (snapshot.empty) {
+if (error || !products || products.length === 0) {
 productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
 <i class="fas fa-box-open"></i><h2>No products yet</h2>
 <p>Be the first to post an ad!</p>
@@ -552,13 +546,11 @@ productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
 return;
 }
 
-const products = [];
-snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
-
 productsGrid.innerHTML = products.map(product => createProductCard(product)).join('');
 }
 
 function createProductCard(product) {
+const createdAt = product.created_at ? new Date(product.created_at).toISOString() : new Date().toISOString();
 return `
 <div class="product-card" onclick="viewProduct('${product.id}')">
 <div class="product-image">
@@ -569,7 +561,7 @@ ${product.condition === 'New' ? '<span class="product-badge">NEW</span>' : ''}
 <div class="product-info">
 <h3>${product.title}</h3>
 <p class="product-location"><i class="fas fa-map-marker-alt"></i> ${product.location}</p>
-<p class="product-date">${formatDate(product.createdAt)}</p>
+<p class="product-date">${formatDate(createdAt)}</p>
 <div class="product-meta-info">
 <span><i class="fas fa-tag"></i> ${product.condition}</span>
 ${product.brand ? `<span><i class="fas fa-certificate"></i> ${product.brand}</span>` : ''}
@@ -589,10 +581,15 @@ document.getElementById('categoryDescription').textContent = `Find the best deal
 
 // Load subcategories
 const subcategoryList = document.getElementById('subcategoryList');
-const snapshot = await db.collection('products').where('category', '==', categoryName).where('status', '==', 'active').get();
-const totalCount = snapshot.size;
 
-subcategoryList.innerHTML = `<li><a onclick="loadCategoryProducts('${categoryName}', '')" class="active">All ${categoryName} <span class="count">${totalCount}</span></a></li>` +
+// Get total count
+const { count: totalCount } = await supabase
+.from('products')
+.select('*', { count: 'exact', head: true })
+.eq('category', categoryName)
+.eq('status', 'active');
+
+subcategoryList.innerHTML = `<li><a onclick="loadCategoryProducts('${categoryName}', '')" class="active">All ${categoryName} <span class="count">${totalCount || 0}</span></a></li>` +
 category.subcategories.map(sub => `<li><a onclick="loadCategoryProducts('${categoryName}', '${sub}')">${sub} <span class="count">-</span></a></li>`).join('');
 
 // Show/hide brand filter
@@ -619,13 +616,18 @@ currentSubcategory = subcategory;
 const productsGrid = document.getElementById('categoryProductsGrid');
 productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading...</p></div>';
 
-let query = db.collection('products').where('category', '==', categoryName).where('status', '==', 'active');
+let query = supabase.from('products').select('*').eq('category', categoryName).eq('status', 'active');
 
-if (subcategory) query = query.where('subcategory', '==', subcategory);
+if (subcategory) query = query.eq('subcategory', subcategory);
 
-const snapshot = await query.get();
-let products = [];
-snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+const { data: products, error } = await query;
+
+if (error || !products) {
+productsGrid.innerHTML = '<div class="empty-state"><p>Error loading products</p></div>';
+return;
+}
+
+let filteredProducts = products;
 
 // Apply filters
 const minPrice = document.getElementById('minPrice').value;
@@ -633,24 +635,24 @@ const maxPrice = document.getElementById('maxPrice').value;
 const condition = document.getElementById('conditionFilter').value;
 const brand = document.getElementById('brandSelect').value;
 
-if (minPrice) products = products.filter(p => parseInt(p.price) >= parseInt(minPrice));
-if (maxPrice) products = products.filter(p => parseInt(p.price) <= parseInt(maxPrice));
-if (condition) products = products.filter(p => p.condition === condition);
-if (brand) products = products.filter(p => p.brand === brand);
+if (minPrice) filteredProducts = filteredProducts.filter(p => parseInt(p.price) >= parseInt(minPrice));
+if (maxPrice) filteredProducts = filteredProducts.filter(p => parseInt(p.price) <= parseInt(maxPrice));
+if (condition) filteredProducts = filteredProducts.filter(p => p.condition === condition);
+if (brand) filteredProducts = filteredProducts.filter(p => p.brand === brand);
 
 // Sort
-products = sortProductsArray(products, currentSort);
+filteredProducts = sortProductsArray(filteredProducts, currentSort);
 
 document.getElementById('categoryProductsTitle').textContent = subcategory || `All ${categoryName}`;
-document.getElementById('resultsCount').textContent = `${products.length} ad${products.length !== 1 ? 's' : ''} found`;
+document.getElementById('resultsCount').textContent = `${filteredProducts.length} ad${filteredProducts.length !== 1 ? 's' : ''} found`;
 
-if (products.length === 0) {
+if (filteredProducts.length === 0) {
 productsGrid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">
 <i class="fas fa-box-open"></i><h2>No ads found</h2>
 <p>Try adjusting your filters</p>
 <button class="btn btn-primary" onclick="clearFilters()">Clear Filters</button></div>`;
 } else {
-productsGrid.innerHTML = products.map(p => createProductCard(p)).join('');
+productsGrid.innerHTML = filteredProducts.map(p => createProductCard(p)).join('');
 }
 
 // Update active subcategory
@@ -666,8 +668,8 @@ document.querySelector('.subcategory-list a').classList.add('active');
 function sortProductsArray(products, sortType) {
 const sorted = [...products];
 switch(sortType) {
-case 'newest': return sorted.sort((a, b) => b.createdAt - a.createdAt);
-case 'oldest': return sorted.sort((a, b) => a.createdAt - b.createdAt);
+case 'newest': return sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+case 'oldest': return sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 case 'price-low': return sorted.sort((a, b) => parseInt(a.price) - parseInt(b.price));
 case 'price-high': return sorted.sort((a, b) => parseInt(b.price) - parseInt(a.price));
 default: return sorted;
@@ -697,11 +699,12 @@ loadCategoryProducts(currentCategory, currentSubcategory);
 }
 
 async function viewProduct(productId) {
-const doc = await db.collection('products').doc(productId).get();
-if (!doc.exists) { showNotification('Product not found', 'error'); return; }
+const { data: product, error } = await supabase.from('products').select('*').eq('id', productId).single();
 
-const product = { id: doc.id, ...doc.data() };
+if (error || !product) { showNotification('Product not found', 'error'); return; }
+
 const detailsContainer = document.getElementById('productDetails');
+const createdAt = product.created_at ? new Date(product.created_at).toISOString() : new Date().toISOString();
 
 detailsContainer.innerHTML = `
 <h1>${product.title}</h1>
@@ -712,17 +715,17 @@ ${product.images && product.images.length > 0 ? `<img src="${product.images[0]}"
 <div class="meta-item"><i class="fas fa-map-marker-alt"></i><span><strong>Location:</strong> ${product.location}</span></div>
 <div class="meta-item"><i class="fas fa-tools"></i><span><strong>Condition:</strong> ${product.condition}</span></div>
 ${product.brand ? `<div class="meta-item"><i class="fas fa-certificate"></i><span><strong>Brand:</strong> ${product.brand}</span></div>` : ''}
-<div class="meta-item"><i class="fas fa-calendar"></i><span><strong>Posted:</strong> ${formatDate(product.createdAt)}</span></div>
+<div class="meta-item"><i class="fas fa-calendar"></i><span><strong>Posted:</strong> ${formatDate(createdAt)}</span></div>
 </div>
 <div class="form-section"><h3>Description</h3><p>${product.description}</p></div>
 <div class="seller-info">
 <h3>Seller Information</h3>
-<p><i class="fas fa-user"></i> <strong>Name:</strong> ${product.sellerName}</p>
-<p><i class="fas fa-phone"></i> <strong>Phone:</strong> ${product.sellerPhone}</p>
-<p><i class="fas fa-envelope"></i> <strong>Email:</strong> ${product.sellerEmail}</p>
+<p><i class="fas fa-user"></i> <strong>Name:</strong> ${product.seller_name || product.sellerName}</p>
+<p><i class="fas fa-phone"></i> <strong>Phone:</strong> ${product.seller_phone || product.sellerPhone}</p>
+<p><i class="fas fa-envelope"></i> <strong>Email:</strong> ${product.seller_email || product.sellerEmail}</p>
 <div class="form-actions" style="justify-content:flex-start;margin-top:20px;">
-<a href="tel:${product.sellerPhone}" class="btn btn-primary btn-lg"><i class="fas fa-phone"></i> Call Seller</a>
-<a href="mailto:${product.sellerEmail}" class="btn btn-secondary btn-lg"><i class="fas fa-envelope"></i> Email Seller</a>
+<a href="tel:${product.seller_phone || product.sellerPhone}" class="btn btn-primary btn-lg"><i class="fas fa-phone"></i> Call Seller</a>
+<a href="mailto:${product.seller_email || product.sellerEmail}" class="btn btn-secondary btn-lg"><i class="fas fa-envelope"></i> Email Seller</a>
 </div>
 </div>
 <div class="form-actions"><button class="btn btn-secondary" onclick="showPage('home')">← Back to Home</button></div>`;
@@ -734,23 +737,43 @@ async function handleRegister(event) {
 event.preventDefault();
 const formData = new FormData(event.target);
 const data = Object.fromEntries(formData);
+const btn = document.getElementById('registerBtn');
+btn.disabled = true;
+btn.textContent = 'Creating Account...';
 
 try {
-const userCredential = await auth.createUserWithEmailAndPassword(data.email, data.password);
-await userCredential.user.updateProfile({ displayName: data.name });
-
-await db.collection('users').doc(userCredential.user.uid).set({
-name: data.name,
+const { data: authData, error: authError } = await supabase.auth.signUp({
 email: data.email,
+password: data.password,
+options: {
+data: {
+name: data.name,
 phone: data.phone,
-location: data.location,
-createdAt: firebase.firestore.FieldValue.serverTimestamp()
+location: data.location
+}
+}
 });
 
-showNotification('Registration successful!');
-showPage('home');
+if (authError) throw authError;
+
+// Create user profile
+const { error: profileError } = await supabase.from('users').insert({
+id: authData.user.id,
+email: data.email,
+name: data.name,
+phone: data.phone,
+location: data.location
+});
+
+if (profileError) throw profileError;
+
+showNotification('Registration successful! Please check your email to verify.');
+showPage('login');
 } catch (error) {
 showNotification(error.message, 'error');
+} finally {
+btn.disabled = false;
+btn.textContent = 'Create Account';
 }
 }
 
@@ -758,18 +781,36 @@ async function handleLogin(event) {
 event.preventDefault();
 const formData = new FormData(event.target);
 const data = Object.fromEntries(formData);
+const btn = document.getElementById('loginBtn');
+btn.disabled = true;
+btn.textContent = 'Logging in...';
 
 try {
-await auth.signInWithEmailAndPassword(data.email, data.password);
+const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+email: data.email,
+password: data.password
+});
+
+if (authError) throw authError;
+
+// Get user profile
+const { data: profile } = await supabase.from('users').select('*').eq('id', authData.user.id).single();
+
+currentUser = profile || { id: authData.user.id, email: authData.user.email, name: authData.user.user_metadata.name };
+
 showNotification('Login successful!');
 showPage('home');
 } catch (error) {
 showNotification('Invalid email or password', 'error');
+} finally {
+btn.disabled = false;
+btn.textContent = 'Login';
 }
 }
 
 async function handleLogout() {
-await auth.signOut();
+await supabase.auth.signOut();
+currentUser = null;
 showNotification('Logged out successfully');
 showPage('home');
 }
@@ -827,17 +868,16 @@ updateImagePreview();
 
 async function handlePostAd(event) {
 event.preventDefault();
-const user = auth.currentUser;
-if (!user) { showNotification('Please login first', 'error'); showPage('login'); return; }
+if (!currentUser) { showNotification('Please login first', 'error'); showPage('login'); return; }
 
 const formData = new FormData(event.target);
 const data = Object.fromEntries(formData);
+const btn = document.getElementById('postAdBtn');
+btn.disabled = true;
+btn.textContent = 'Posting...';
 
 try {
-const userData = await db.collection('users').doc(user.uid).get();
-const userInfo = userData.data();
-
-await db.collection('products').add({
+const { error } = await supabase.from('products').insert({
 title: data.title,
 description: data.description,
 price: data.price,
@@ -847,13 +887,14 @@ brand: data.brand || '',
 location: data.location,
 condition: data.condition,
 images: uploadedImages,
-sellerId: user.uid,
-sellerName: userInfo.name || user.displayName || user.email,
-sellerPhone: userInfo.phone || '',
-sellerEmail: userInfo.email || user.email,
-createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+seller_id: currentUser.id,
+seller_name: currentUser.name,
+seller_phone: currentUser.phone,
+seller_email: currentUser.email,
 status: 'active'
 });
+
+if (error) throw error;
 
 uploadedImages = [];
 document.getElementById('imagePreview').innerHTML = '';
@@ -862,19 +903,25 @@ showNotification('🎉 Ad posted successfully!');
 showPage('my-ads');
 } catch (error) {
 showNotification('Error posting ad: ' + error.message, 'error');
+} finally {
+btn.disabled = false;
+btn.textContent = 'Post Ad Now';
 }
 }
 
 async function loadMyAds() {
-const user = auth.currentUser;
-if (!user) { showPage('login'); return; }
+if (!currentUser) { showPage('login'); return; }
 
 const container = document.getElementById('myAdsList');
 container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Loading your ads...</p></div>';
 
-const snapshot = await db.collection('products').where('sellerId', '==', user.uid).orderBy('createdAt', 'desc').get();
+const { data: ads, error } = await supabase
+.from('products')
+.select('*')
+.eq('seller_id', currentUser.id)
+.order('created_at', { ascending: false });
 
-if (snapshot.empty) {
+if (error || !ads || ads.length === 0) {
 container.innerHTML = `<div class="empty-state">
 <i class="fas fa-ad"></i><h2>No ads yet</h2>
 <p>You haven't posted any ads yet.</p>
@@ -882,10 +929,9 @@ container.innerHTML = `<div class="empty-state">
 return;
 }
 
-const ads = [];
-snapshot.forEach(doc => ads.push({ id: doc.id, ...doc.data() }));
-
-container.innerHTML = ads.map(ad => `
+container.innerHTML = ads.map(ad => {
+const createdAt = ad.created_at ? new Date(ad.created_at).toISOString() : new Date().toISOString();
+return `
 <div class="my-ad-item">
 ${ad.images && ad.images.length > 0 ? `<img src="${ad.images[0]}" alt="${ad.title}">` : '<div style="width:150px;height:150px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;"><i class="fas fa-image" style="font-size:48px;"></i></div>'}
 <div class="my-ad-info">
@@ -894,7 +940,7 @@ ${ad.images && ad.images.length > 0 ? `<img src="${ad.images[0]}" alt="${ad.titl
 <p><strong>Category:</strong> ${ad.category} ${ad.subcategory ? `- ${ad.subcategory}` : ''}</p>
 ${ad.brand ? `<p><strong>Brand:</strong> ${ad.brand}</p>` : ''}
 <p><strong>Location:</strong> ${ad.location}</p>
-<p><strong>Posted:</strong> ${formatDate(ad.createdAt)}</p>
+<p><strong>Posted:</strong> ${formatDate(createdAt)}</p>
 <span class="product-status status-${ad.status === 'active' ? 'active' : 'sold'}">${ad.status.toUpperCase()}</span>
 <div class="my-ad-actions">
 <button class="btn btn-secondary" onclick="viewProduct('${ad.id}')">View</button>
@@ -902,13 +948,15 @@ ${ad.brand ? `<p><strong>Brand:</strong> ${ad.brand}</p>` : ''}
 <button class="btn btn-primary" onclick="markAsSold('${ad.id}')">${ad.status === 'active' ? 'Mark as Sold' : 'Mark Active'}</button>
 </div>
 </div>
-</div>`).join('');
+</div>`;
+}).join('');
 }
 
 async function deleteAd(productId) {
 if (!confirm('Delete this ad?')) return;
 try {
-await db.collection('products').doc(productId).delete();
+const { error } = await supabase.from('products').delete().eq('id', productId);
+if (error) throw error;
 showNotification('Ad deleted');
 loadMyAds();
 } catch (error) {
@@ -918,9 +966,10 @@ showNotification('Error deleting ad', 'error');
 
 async function markAsSold(productId) {
 try {
-const doc = await db.collection('products').doc(productId).get();
-const currentStatus = doc.data().status;
-await db.collection('products').doc(productId).update({ status: currentStatus === 'active' ? 'sold' : 'active' });
+const { data: ad } = await supabase.from('products').select('status').eq('id', productId).single();
+const newStatus = ad.status === 'active' ? 'sold' : 'active';
+const { error } = await supabase.from('products').update({ status: newStatus }).eq('id', productId);
+if (error) throw error;
 showNotification('Ad updated');
 loadMyAds();
 } catch (error) {
@@ -935,9 +984,12 @@ if (!query.trim()) { showNotification('Enter search term', 'error'); return; }
 const productsGrid = document.getElementById('productsGrid');
 productsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Searching...</p></div>';
 
-const snapshot = await db.collection('products').where('status', '==', 'active').get();
-const products = [];
-snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+const { data: products, error } = await supabase.from('products').select('*').eq('status', 'active');
+
+if (error || !products) {
+productsGrid.innerHTML = '<div class="empty-state"><p>Error searching</p></div>';
+return;
+}
 
 const filtered = products.filter(p =>
 p.title.toLowerCase().includes(query) ||
@@ -962,9 +1014,9 @@ showNotification('Message sent!');
 event.target.reset();
 }
 
-function formatDate(timestamp) {
-if (!timestamp) return 'Unknown';
-const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+function formatDate(dateString) {
+if (!dateString) return 'Unknown';
+const date = new Date(dateString);
 const now = new Date();
 const diffTime = Math.abs(now - date);
 const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -974,16 +1026,30 @@ if (diffDays < 7) return `${diffDays} days ago`;
 return date.toLocaleDateString();
 }
 
-// Auth state listener
-auth.onAuthStateChanged(user => {
-updateHeader();
-if (user && document.getElementById('myAdsPage').classList.contains('active')) {
-loadMyAds();
+// Check auth state on load
+async function checkAuth() {
+const { data: { session } } = await supabase.auth.getSession();
+if (session) {
+const { data: profile } = await supabase.from('users').select('*').eq('id', session.user.id).single();
+currentUser = profile || { id: session.user.id, email: session.user.email, name: session.user.user_metadata.name };
 }
+updateHeader();
+}
+
+// Listen for auth changes
+supabase.auth.onAuthStateChange(async (event, session) => {
+if (session) {
+const { data: profile } = await supabase.from('users').select('*').eq('id', session.user.id).single();
+currentUser = profile || { id: session.user.id, email: session.user.email, name: session.user.user_metadata.name };
+} else {
+currentUser = null;
+}
+updateHeader();
+if (document.getElementById('myAdsPage').classList.contains('active')) loadMyAds();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-updateHeader();
+checkAuth();
 loadHomeContent();
 document.getElementById('searchInput')?.addEventListener('keypress', (e) => {
 if (e.key === 'Enter') search();
