@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTRADE KE - Buy and Sell Online in Kenya</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f5f5f5; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+.header { background: #28a745; color: white; padding: 15px 0; }
+.header-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.logo h1 { font-size: 24px; cursor: pointer; }
+.search-bar { flex: 1; max-width: 600px; display: flex; }
+.search-bar input { flex: 1; padding: 10px; border: none; border-radius: 5px 0 0 5px; }
+.search-bar button { padding: 10px 20px; background: #ffc107; border: none; border-radius: 0 5px 5px 0; cursor: pointer; }
+.header-actions { display: flex; gap: 10px; }
+.btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+.btn-primary { background: #ffc107; color: #333; }
+.btn-secondary { background: white; color: #28a745; }
+.page { display: none; padding: 40px 0; }
+.page.active { display: block; }
+.categories-section { background: white; padding: 40px 0; margin: 20px 0; }
+.categories-section h2 { text-align: center; margin-bottom: 30px; color: #28a745; }
+.categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+.category-card { background: #f8f9fa; padding: 30px; text-align: center; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+.category-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.category-icon { font-size: 48px; margin-bottom: 10px; }
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+.product-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); cursor: pointer; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+.product-image { height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center; }
+.product-image img { width: 100%; height: 100%; object-fit: cover; }
+.product-price { background: rgba(0,0,0,0.8); color: white; padding: 10px; text-align: center; font-weight: bold; }
+.product-info { padding: 15px; }
+.product-info h3 { margin-bottom: 10px; font-size: 16px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; }
+.auth-box { background: white; padding: 40px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.auth-box h1 { text-align: center; color: #28a745; margin-bottom: 20px; }
+.notification { position: fixed; top: 20px; right: 20px; padding: 15px 25px; background: #28a745; color: white; border-radius: 5px; z-index: 10000; }
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state i { font-size: 64px; color: #ddd; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<header class="header">
+<div class="container">
+<div class="header-top">
+<div class="logo" onclick="showPage('home')"><h1>🛒 MTRADE KE</h1></div>
+<div class="search-bar">
+<input type="text" placeholder="Search..." id="searchInput">
+<button onclick="search()">🔍</button>
+</div>
+<div class="header-actions" id="headerActions"></div>
+</div>
+</div>
+</header>
+
+<div id="homePage" class="page active">
+<section class="categories-section">
+<div class="container">
+<h2>Browse Categories</h2>
+<div class="categories-grid" id="categoriesGrid"></div>
+</div>
+</section>
+<section class="categories-section">
+<div class="container">
+<h2>Recent Ads</h2>
+<div class="products-grid" id="productsGrid"></div>
+</div>
+</section>
+</div>
+
+<div id="loginPage" class="page">
+<div class="container">
+<div class="auth-box">
+<h1>Login</h1>
+<form onsubmit="handleLogin(event)">
+<div class="form-group"><label>Email</label><input type="email" name="email" required></div>
+<div class="form-group"><label>Password</label><input type="password" name="password" required></div>
+<button type="submit" class="btn btn-primary btn-block">Login</button>
+</form>
+<p style="text-align:center;margin-top:20px;">No account? <a href="#" onclick="showPage('register')">Register</a></p>
+</div>
+</div>
+</div>
+
+<div id="registerPage" class="page">
+<div class="container">
+<div class="auth-box">
+<h1>Register</h1>
+<form onsubmit="handleRegister(event)">
+<div class="form-group"><label>Name</label><input type="text" name="name" required></div>
+<div class="form-group"><label>Email</label><input type="email" name="email" required></div>
+<div class="form-group"><label>Phone</label><input type="tel" name="phone" required></div>
+<div class="form-group"><label>Location</label><input type="text" name="location" required></div>
+<div class="form-group"><label>Password</label><input type="password" name="password" required></div>
+<button type="submit" class="btn btn-primary btn-block">Register</button>
+</form>
+<p style="text-align:center;margin-top:20px;">Have account? <a href="#" onclick="showPage('login')">Login</a></p>
+</div>
+</div>
+</div>
+
+<div id="postAdPage" class="page">
+<div class="container">
+<div class="auth-box" style="max-width:800px;">
+<h1>Post Ad</h1>
+<form onsubmit="handlePostAd(event)">
+<div class="form-group"><label>Title</label><input type="text" name="title" required></div>
+<div class="form-group"><label>Description</label><textarea name="description" rows="4" required></textarea></div>
+<div class="form-group"><label>Category</label><select name="category" id="categorySelect" required onchange="loadSubcategories()"><option value="">Select</option><option value="Vehicles">Vehicles</option><option value="Property">Property</option><option value="Electronics">Electronics</option><option value="Fashion">Fashion</option></select></div>
+<div class="form-group"><label>Subcategory</label><select name="subcategory" id="subcategorySelect"><option value="">Select</option></select></div>
+<div class="form-group"><label>Price (KSh)</label><input type="number" name="price" required></div>
+<div class="form-group"><label>Location</label><input type="text" name="location" required></div>
+<div class="form-group"><label>Images</label><input type="file" id="imageInput" multiple accept="image/*" onchange="previewImages(event)"></div>
+<div id="imagePreview" style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;"></div>
+<button type="submit" class="btn btn-primary btn-block">Post Ad</button>
+</form>
+</div>
+</div>
+</div>
+
+<div id="myAdsPage" class="page">
+<div class="container">
+<div class="auth-box" style="max-width:900px;">
+<h1>My Ads</h1>
+<div id="myAdsList"></div>
+</div>
+</div>
+</div>
+
+<script>
+const categories = [
+{ name: 'Vehicles', icon: '🚗' },
+{ name: 'Property', icon: '🏠' },
+{ name: 'Electronics', icon: '📱' },
+{ name: 'Fashion', icon: '👕' },
+{ name: 'Sports', icon: '⚽' },
+{ name: 'Services', icon: '🔧' }
+];
+
+const subcategories = {
+'Vehicles': ['Cars', 'Motorcycles', 'Trucks'],
+'Property': ['Houses', 'Land', 'Commercial'],
+'Electronics': ['Phones', 'Computers', 'TVs'],
+'Fashion': ['Clothing', 'Shoes', 'Bags']
+};
+
+if (!localStorage.getItem('users')) localStorage.setItem('users', '[]');
+if (!localStorage.getItem('products')) localStorage.setItem('products', '[]');
+if (!localStorage.getItem('currentUser')) localStorage.setItem('currentUser', 'null');
+
+function showNotification(msg) {
+const div = document.createElement('div');
+div.className = 'notification';
+div.textContent = msg;
+document.body.appendChild(div);
+setTimeout(() => div.remove(), 3000);
+}
+
+function showPage(page) {
+document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+const pages = {
+'home': 'homePage',
+'login': 'loginPage',
+'register': 'registerPage',
+'post-ad': 'postAdPage',
+'my-ads': 'myAdsPage'
+};
+document.getElementById(pages[page]).classList.add('active');
+updateHeader();
+if (page === 'home') loadHome();
+if (page === 'my-ads') loadMyAds();
+window.scrollTo(0, 0);
+}
+
+function updateHeader() {
+const user = JSON.parse(localStorage.getItem('currentUser'));
+const div = document.getElementById('headerActions');
+if (user) {
+div.innerHTML = `
+<button class="btn btn-primary" onclick="showPage('post-ad')">+ Post Ad</button>
+<button class="btn btn-secondary" onclick="showPage('my-ads')">My Ads</button>
+<button class="btn btn-secondary" onclick="logout()">Logout</button>
+<span style="color:white;padding:10px;">${user.name}</span>
+`;
+} else {
+div.innerHTML = `
+<button class="btn btn-secondary" onclick="showPage('login')">Login</button>
+<button class="btn btn-primary" onclick="showPage('register')">Register</button>
+`;
+}
+}
+
+function loadHome() {
+const grid = document.getElementById('categoriesGrid');
+grid.innerHTML = categories.map(c => `
+<div class="category-card" onclick="filterCategory('${c.name}')">
+<div class="category-icon">${c.icon}</div>
+<h3>${c.name}</h3>
+<p>${getCount(c.name)} ads</p>
+</div>
+`).join('');
+loadProducts();
+}
+
+function getCount(cat) {
+const products = JSON.parse(localStorage.getItem('products'));
+return products.filter(p => p.category === cat && p.status === 'active').length;
+}
+
+function loadProducts(filter = null) {
+let products = JSON.parse(localStorage.getItem('products'));
+products = products.filter(p => p.status === 'active');
+if (filter) products = products.filter(p => p.category === filter);
+const grid = document.getElementById('productsGrid');
+if (products.length === 0) {
+grid.innerHTML = '<div class="empty-state"><h2>No ads yet</h2><p>Be first to post!</p></div>';
+return;
+}
+grid.innerHTML = products.slice(0, 12).map(p => `
+<div class="product-card" onclick="viewProduct('${p.id}')">
+<div class="product-image">${p.images && p.images[0] ? `<img src="${p.images[0]}">` : '<span>No Image</span>'}</div>
+<div class="product-price">KSh ${parseInt(p.price).toLocaleString()}</div>
+<div class="product-info">
+<h3>${p.title}</h3>
+<p>📍 ${p.location}</p>
+</div>
+</div>
+`).join('');
+}
+
+function filterCategory(cat) {
+showPage('home');
+loadProducts(cat);
+document.querySelector('.categories-section h2').textContent = cat + ' - Ads';
+}
+
+function viewProduct(id) {
+const products = JSON.parse(localStorage.getItem('products'));
+const p = products.find(x => x.id === id);
+if (!p) return;
+alert(`${p.title}\nPrice: KSh ${p.price}\nSeller: ${p.sellerName}\nPhone: ${p.sellerPhone}`);
+}
+
+function handleRegister(e) {
+e.preventDefault();
+const form = e.target;
+const users = JSON.parse(localStorage.getItem('users'));
+if (users.find(u => u.email === form.email.value)) {
+showNotification('Email exists!');
+return;
+}
+const user = {
+id: Date.now().toString(),
+name: form.name.value,
+email: form.email.value,
+phone: form.phone.value,
+location: form.location.value,
+password: form.password.value
+};
+users.push(user);
+localStorage.setItem('users', JSON.stringify(users));
+localStorage.setItem('currentUser', JSON.stringify(user));
+showNotification('Registered!');
+showPage('home');
+}
+
+function handleLogin(e) {
+e.preventDefault();
+const form = e.target;
+const users = JSON.parse(localStorage.getItem('users'));
+const user = users.find(u => u.email === form.email.value && u.password === form.password.value);
+if (!user) {
+showNotification('Invalid credentials!');
+return;
+}
+localStorage.setItem('currentUser', JSON.stringify(user));
+showNotification('Logged in!');
+showPage('home');
+}
+
+function logout() {
+localStorage.setItem('currentUser', 'null');
+showNotification('Logged out!');
+showPage('home');
+}
+
+function loadSubcategories() {
+const cat = document.getElementById('categorySelect').value;
+const select = document.getElementById('subcategorySelect');
+const subs = subcategories[cat] || [];
+select.innerHTML = '<option value="">Select</option>' + subs.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+let uploadedImages = [];
+function previewImages(e) {
+const files = e.target.files;
+Array.from(files).slice(0, 5).forEach(file => {
+const reader = new FileReader();
+reader.onload = ev => {
+uploadedImages.push(ev.target.result);
+document.getElementById('imagePreview').innerHTML = uploadedImages.map((img, i) => 
+`<div style="width:100px;height:100px;position:relative;"><img src="${img}" style="width:100%;height:100%;object-fit:cover;"><button onclick="uploadedImages.splice(${i},1);previewImages({target:{files:[]}})" style="position:absolute;top:0;right:0;background:red;color:white;border:none;cursor:pointer;">×</button></div>`
+).join('');
+};
+reader.readAsDataURL(file);
+});
+}
+
+function handlePostAd(e) {
+e.preventDefault();
+const user = JSON.parse(localStorage.getItem('currentUser'));
+if (!user) {
+showNotification('Please login!');
+showPage('login');
+return;
+}
+const form = e.target;
+const ad = {
+id: Date.now().toString(),
+title: form.title.value,
+description: form.description.value,
+category: form.category.value,
+subcategory: form.subcategory.value,
+price: form.price.value,
+location: form.location.value,
+images: uploadedImages,
+sellerId: user.id,
+sellerName: user.name,
+sellerPhone: user.phone,
+sellerEmail: user.email,
+createdAt: new Date().toISOString(),
+status: 'active'
+};
+const products = JSON.parse(localStorage.getItem('products'));
+products.unshift(ad);
+localStorage.setItem('products', JSON.stringify(products));
+uploadedImages = [];
+document.getElementById('imagePreview').innerHTML = '';
+form.reset();
+showNotification('Ad posted!');
+showPage('my-ads');
+}
+
+function loadMyAds() {
+const user = JSON.parse(localStorage.getItem('currentUser'));
+if (!user) {
+showPage('login');
+return;
+}
+const products = JSON.parse(localStorage.getItem('products'));
+const myAds = products.filter(p => p.sellerId === user.id);
+const div = document.getElementById('myAdsList');
+if (myAds.length === 0) {
+div.innerHTML = '<div class="empty-state"><h2>No ads</h2><button class="btn btn-primary" onclick="showPage(\'post-ad\')">Post Ad</button></div>';
+return;
+}
+div.innerHTML = myAds.map(ad => `
+<div style="border:1px solid #ddd;padding:15px;margin-bottom:15px;border-radius:5px;display:flex;gap:15px;flex-wrap:wrap;">
+<div style="width:150px;height:150px;background:#ddd;">${ad.images && ad.images[0] ? `<img src="${ad.images[0]}" style="width:100%;height:100%;object-fit:cover;">` : ''}</div>
+<div style="flex:1;">
+<h3>${ad.title}</h3>
+<p>Price: KSh ${parseInt(ad.price).toLocaleString()}</p>
+<p>Category: ${ad.category}</p>
+<p>Status: ${ad.status}</p>
+<button class="btn btn-primary" onclick="viewProduct('${ad.id}')">View</button>
+<button class="btn btn-secondary" onclick="deleteAd('${ad.id}')" style="margin-left:10px;">Delete</button>
+</div>
+</div>
+`).join('');
+}
+
+function deleteAd(id) {
+if (!confirm('Delete?')) return;
+const products = JSON.parse(localStorage.getItem('products'));
+const filtered = products.filter(p => p.id !== id);
+localStorage.setItem('products', JSON.stringify(filtered));
+showNotification('Deleted!');
+loadMyAds();
+}
+
+function search() {
+const q = document.getElementById('searchInput').value.toLowerCase();
+if (!q) return;
+const products = JSON.parse(localStorage.getItem('products'));
+const filtered = products.filter(p => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+showPage('home');
+const grid = document.getElementById('productsGrid');
+grid.innerHTML = filtered.map(p => `
+<div class="product-card" onclick="viewProduct('${p.id}')">
+<div class="product-image">${p.images && p.images[0] ? `<img src="${p.images[0]}">` : '<span>No Image</span>'}</div>
+<div class="product-price">KSh ${parseInt(p.price).toLocaleString()}</div>
+<div class="product-info"><h3>${p.title}</h3></div>
+</div>
+`).join('');
+document.querySelector('.categories-section h2').textContent = 'Search Results';
+}
+
+window.onload = () => {
+updateHeader();
+loadHome();
+document.getElementById('searchInput').addEventListener('keypress', e => {
+if (e.key === 'Enter') search();
+});
+};
+</script>
+</body>
+</html>
